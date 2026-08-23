@@ -39,3 +39,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# OpenCode local configuration
+.opencode.json
+
+# Environment variables
+.env
+.env.*
+!.env.example
