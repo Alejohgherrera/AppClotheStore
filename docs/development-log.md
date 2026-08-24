@@ -258,7 +258,73 @@ Feature 002 completada: todos los criterios de aceptación de `spec.md` verifica
 
 ---
 
-# 8. Registro de problemas y soluciones
+# 8. Feature 004 — Navegación inicial
+
+**Estado:** Completada
+
+### Objetivo
+
+Configurar la navegación principal de ClotheStore con React Navigation, centralizada en `src/navigation/` y manteniendo `App.js` como punto de entrada.
+
+### Documentación
+
+```text
+spec/features/004-navegacion-inicial/
+├── spec.md
+├── plan.md
+└── tasks.md
+```
+
+### Implementación
+
+* Dependencias instaladas con `npx expo install` (versiones compatibles con Expo SDK 54):
+  * `@react-navigation/native` ^7.3.17
+  * `@react-navigation/native-stack` ^7.18.9
+  * `react-native-screens` ~4.16.0
+  * `react-native-safe-area-context` ~5.6.0
+* `src/navigation/AppNavigator.js`: `NavigationContainer` con native stack; tema de navegación derivado de `DarkTheme` extendido con los tokens de `src/theme/`; rutas iniciales `Home` y `Detail`; `screenOptions` con colores y tipografía del sistema visual.
+* `src/screens/HomeScreen.js`: pantalla inicial con el contenido previo de `App.js` y botón "Explorar" (`Pressable`) que navega a Detail.
+* `src/screens/DetailScreen.js`: pantalla placeholder para validar la navegación.
+* `App.js`: reducido a punto de entrada (`StatusBar` + `AppNavigator`), sin configuración de navegación.
+
+### Archivos modificados
+
+```text
+package.json / package-lock.json      (dependencias de navegación)
+App.js                                (reescrito como punto de entrada)
+src/navigation/AppNavigator.js        (nuevo)
+src/screens/HomeScreen.js             (nuevo)
+src/screens/DetailScreen.js           (nuevo)
+spec/features/004-navegacion-inicial/tasks.md
+spec/constitution/roadmap.md          (004 a "En curso")
+docs/development-log.md
+```
+
+### Problemas encontrados
+
+* Render Error en iOS al cargar la navegación: `TypeError: Cannot read property 'regular' of undefined`.
+
+### Soluciones
+
+* La causa fue el tema personalizado pasado a `NavigationContainer`: omitía la clave `fonts`, exigida por el objeto de tema completo de React Navigation v7. Se corrigió extendiendo `DarkTheme` (conserva `fonts`) y sobrescribiendo únicamente `colors` con los tokens del proyecto.
+
+### Decisiones técnicas
+
+* Native stack (`@react-navigation/native-stack`) sobre JS stack: mejor rendimiento y comportamiento nativo.
+* Tema de navegación derivado de `DarkTheme` en lugar de construido desde cero: garantiza la estructura completa exigida por React Navigation v7.
+* Rutas mínimas (`Home`, `Detail`): sin adelantar funcionalidades de features futuras.
+
+### Resultado
+
+* Compilación verificada con Metro bundler (iOS y Android, 828 módulos, 0 errores).
+* `expo-doctor`: 18/18 comprobaciones aprobadas; dependencias alineadas con SDK 54.
+* Validación visual en iOS (Expo Go): Home → Detalle → atrás, sin errores en consola.
+* Validación visual en Android (Expo Go): Home → Detalle → atrás, sin errores.
+* Todos los criterios de aceptación de `spec.md` verificados. Movida a "Hecho" en `roadmap.md`.
+
+---
+
+# 9. Registro de problemas y soluciones
 
 Esta sección registra problemas técnicos encontrados durante el desarrollo y cómo fueron solucionados.
 
@@ -266,10 +332,11 @@ Esta sección registra problemas técnicos encontrados durante el desarrollo y c
 | ----- | -------- | -------- | ------ |
 | 2026-08-23 | Estilos de título/subtítulo en `App.js` definidos pero nunca aplicados | Se integraron consumiendo los tokens de `src/theme/index.js` | Resuelto |
 | 2026-08-23 | Reporte de duplicación de la primera tarea en `tasks.md` | Análisis de líneas duplicadas: no existe duplicación real; sin cambios | Cerrado |
+| 2026-08-24 | Render Error en iOS: `Cannot read property 'regular' of undefined` al renderizar la navegación | El tema custom de `NavigationContainer` omitía `fonts` (exigido por React Navigation v7); se extendió `DarkTheme` sobrescribiendo solo `colors` | Resuelto |
 
 ---
 
-# 9. Registro de decisiones técnicas
+# 10. Registro de decisiones técnicas
 
 Las decisiones importantes que afecten la arquitectura, tecnologías o funcionamiento del proyecto deben registrarse aquí.
 
@@ -280,10 +347,12 @@ Las decisiones importantes que afecten la arquitectura, tecnologías o funcionam
 | 2026-08-23 | Utilizar Ollama para modelos locales | Permitir trabajar con modelos locales durante el desarrollo | Herramientas |
 | 2026-08-23 | Tokens visuales semánticos centralizados en `src/theme/index.js` | Fuente única de verdad y consistencia entre pantallas | 002 |
 | 2026-08-23 | Paleta oscura azulada premium sin dependencias externas | Identidad premium/urbana y compatibilidad directa con RN/Expo | 002 |
+| 2026-08-24 | React Navigation v7 con native-stack | Rendimiento y comportamiento nativo; solución estándar definida en el tech-stack | 004 |
+| 2026-08-24 | Tema de navegación derivado de `DarkTheme` + tokens del proyecto | Estructura completa exigida por React Navigation v7 y consistencia visual | 004 |
 
 ---
 
-# 10. Registro de validaciones
+# 11. Registro de validaciones
 
 Las validaciones realizadas durante el desarrollo se registrarán aquí.
 
@@ -293,19 +362,24 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 | 2026-08-23 | Sintaxis ESM/JSX con parser Babel (`App.js`, `src/theme/index.js`) | Aprobado | 002 |
 | 2026-08-23 | Estructura y diferenciación de tokens visuales (script Node) | Aprobado | 002 |
 | 2026-08-23 | Validación visual en Expo Go (usuario) | Aprobado | 002 |
+| 2026-08-24 | `expo-doctor` (18 comprobaciones) y `expo install --check` | Aprobado: dependencias alineadas con SDK 54 | 004 |
+| 2026-08-24 | Bundle Metro vía `npx expo export` (iOS y Android) | Aprobado: 828 módulos, 0 errores | 004 |
+| 2026-08-24 | Validación visual iOS Expo Go: Home → Detalle → atrás, consola limpia | Aprobado (tras corrección del tema de navegación) | 004 |
+| 2026-08-24 | Validación visual Android Expo Go: Home → Detalle → atrás | Aprobado | 004 |
 
 ---
 
-# 11. Features completadas
+# 12. Features completadas
 
 | Nº  | Feature          | Estado       | Fecha      |
 | --- | ---------------- | ------------ | ---------- |
 | 001 | Constitución SDD | ✅ Completada | 2026-08-23 |
 | 002 | Sistema visual / Theme | ✅ Completada | 2026-08-23 |
+| 004 | Navegación inicial | ✅ Completada | 2026-08-24 |
 
 ---
 
-# 12. Features en desarrollo
+# 13. Features en desarrollo
 
 | Nº  | Feature                | Estado     |
 | --- | ---------------------- | ---------- |
@@ -313,7 +387,7 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 
 ---
 
-# 13. Notas de desarrollo
+# 14. Notas de desarrollo
 
 Este documento debe mantenerse actualizado durante todo el ciclo de vida del proyecto.
 
@@ -332,7 +406,7 @@ La bitácora debe reflejar únicamente trabajo realmente realizado y validado.
 
 ---
 
-# 14. Regla de documentación
+# 15. Regla de documentación
 
 Antes de considerar una feature como completada:
 
