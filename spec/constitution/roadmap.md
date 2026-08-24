@@ -10,19 +10,17 @@
 
 2. **002 · Sistema visual / Theme** — Centralizar colores, tipografías, espaciados, radios y demás tokens visuales en `src/theme/`.
 
+3. **003 · Arquitectura base** — Definir y estructurar la arquitectura inicial de la aplicación y sus responsabilidades principales.
+
 ## En curso 🔜
 
 *Lo próximo a abordar. Idealmente una sola feature "en curso" a la vez.*
-
-*(Ninguna por el momento)*
 
 ## Próximas 📋
 
 *Features planificadas que respetan la constitución. Cada feature se crea como `features/NNN-nombre-feature/` con `spec.md`, `plan.md` y `tasks.md` antes de tocar código.*
 
 ### FASE 1 — Fundamentos
-
-3. **003 · Arquitectura base** — Definir y estructurar la arquitectura inicial de la aplicación y sus responsabilidades principales.
 
 4. **004 · Navegación inicial** — Configurar la navegación principal de ClotheStore en `src/navigation/`.
 
