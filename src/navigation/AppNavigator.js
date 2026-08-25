@@ -2,7 +2,9 @@ import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors, typography } from '../theme';
 import HomeScreen from '../screens/HomeScreen';
-import CatalogScreen from '../screens/CatalogScreen';
+import GenderSelectScreen from '../screens/GenderSelectScreen';
+import CategoriesScreen from '../screens/CategoriesScreen';
+import ProductListScreen from '../screens/ProductListScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,8 +46,18 @@ export default function AppNavigator() {
         />
         <Stack.Screen
           name="Catalog"
-          component={CatalogScreen}
+          component={GenderSelectScreen}
           options={{ title: 'Catálogo' }}
+        />
+        <Stack.Screen
+          name="Categories"
+          component={CategoriesScreen}
+          options={({ route }) => ({ title: route.params.genero.nombre })}
+        />
+        <Stack.Screen
+          name="Products"
+          component={ProductListScreen}
+          options={({ route }) => ({ title: route.params.categoria.nombre })}
         />
       </Stack.Navigator>
     </NavigationContainer>

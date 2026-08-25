@@ -16,6 +16,12 @@ Cada producto mostrado en el catálogo tendrá como mínimo:
 * Categoría.
 * Disponibilidad básica.
 
+La exploración del catálogo se organiza por género y categoría:
+
+1. El usuario selecciona un género: **Hombre** o **Mujer**.
+2. Se muestran las categorías del género seleccionado, cada una con imagen de portada: Hombre (Boxers, Gorras, Camisetas y Polos) y Mujer (Corsets, Jeans y Vestidos).
+3. Al seleccionar una categoría se muestra la lista de productos correspondiente.
+
 El catálogo utilizará inicialmente datos locales para permitir el desarrollo y validación de la experiencia de usuario antes de conectar el sistema con un backend y una base de datos.
 
 ## Por qué
@@ -51,6 +57,20 @@ La implementación inicial con datos locales permite avanzar en la interfaz sin 
 
 * [ ] El catálogo puede mostrar productos masculinos y femeninos.
 
+* [ ] El usuario puede elegir entre el catálogo Hombre y el catálogo Mujer.
+
+* [ ] Al seleccionar un género se muestran sus categorías, cada una con imagen de portada.
+
+* [ ] Al seleccionar una categoría se muestra únicamente la lista de productos de esa categoría y género.
+
+* [ ] Cada género muestra únicamente las categorías definidas para él en los datos.
+
+* [ ] Los productos Unisex aparecen en las categorías donde estén incluidos, con el filtro por género aplicado.
+
+* [ ] Las categorías sin productos muestran un estado vacío informativo en lugar de una lista vacía.
+
+* [ ] La navegación permite avanzar y retroceder entre género, categoría y lista de productos.
+
 * [ ] Los productos utilizan una presentación visual coherente con el sistema visual definido en `src/theme/`.
 
 * [ ] La interfaz mantiene una apariencia premium, moderna y urbana.
@@ -69,7 +89,7 @@ La implementación inicial con datos locales permite avanzar en la interfaz sin 
 
 * La búsqueda de productos se implementará en la Feature 008 · Búsqueda.
 
-* Los filtros avanzados por talla, color, precio u otros atributos se implementarán en la Feature 007 · Categorías y filtros.
+* Los filtros avanzados por talla, color, precio u otros atributos se implementarán en una feature posterior.
 
 * La pantalla completa de detalle de producto se implementará en la Feature 009 · Detalle de producto.
 

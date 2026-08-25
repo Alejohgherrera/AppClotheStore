@@ -14,6 +14,12 @@ La interfaz utilizará los tokens definidos en `src/theme/` para mantener una id
 
 La arquitectura se preparará para que posteriormente los datos locales puedan sustituirse por información proveniente de una API sin tener que reconstruir completamente la interfaz.
 
+## Extensión — Navegación por género y categorías
+
+La exploración pasa a ser jerárquica: selección de género (Hombre/Mujer) → rejilla de categorías con imagen de portada → lista filtrada de productos.
+
+Las categorías se definirán como datos en `src/data/`, separadas de la interfaz, al igual que los productos. El filtrado combinará género y categoría, mostrando también los productos Unisex en ambos catálogos. Las categorías sin productos presentarán un estado vacío informativo.
+
 ## Implementación
 
 1. Crear el módulo de datos iniciales del catálogo en `src/data/`, manteniendo los productos separados de la interfaz.
@@ -42,6 +48,18 @@ La arquitectura se preparará para que posteriormente los datos locales puedan s
 
 13. Validar la implementación contra los criterios de aceptación definidos en `spec.md`.
 
+14. Crear el módulo `src/data/categories.js` con los géneros, las categorías por género (nombre e imagen de portada) y la función de filtrado por género y categoría.
+
+15. Crear componentes reutilizables `GenderCard` y `CategoryCard` en `src/components/`.
+
+16. Crear las pantallas `GenderSelectScreen`, `CategoriesScreen` y `ProductListScreen` en `src/screens/`.
+
+17. Registrar las rutas parametrizadas (`Catalog`, `Categories`, `Products`) en `src/navigation/AppNavigator.js`, reutilizando el stack nativo existente.
+
+18. Implementar el estado vacío para categorías sin productos (catálogo Mujer durante su carga inicial).
+
+19. Validar visualmente el flujo completo y los criterios ampliados.
+
 ## Decisiones
 
 * **Datos locales inicialmente** — Permiten desarrollar y probar el catálogo sin depender todavía de un backend o una base de datos. La conexión remota se incorporará posteriormente.
@@ -58,6 +76,14 @@ La arquitectura se preparará para que posteriormente los datos locales puedan s
 
 * **Preparación para backend futuro** — La estructura de los datos locales deberá ser suficientemente clara para facilitar posteriormente su reemplazo por información proveniente de una API.
 
+* **Navegación por parámetros** — Género y categoría se pasan como parámetros de ruta al stack nativo ya configurado; sin nuevas dependencias de navegación.
+
+* **Unisex visible en ambos géneros** — Los productos Unisex (gorras) aparecen en Hombre y en Mujer, coherente con cómo se etiquetan en los datos.
+
+* **Portadas provisionales compartidas** — Mientras no existan fotos femeninas, las categorías del catálogo Mujer reutilizan portadas de productos existentes; se actualizarán cuando el usuario añada las imágenes.
+
+* **Datos de categorías separados de la interfaz** — Igual que los productos, las categorías viven en `src/data/` para facilitar su futura sustitución por una API.
+
 ## Riesgos
 
 * **Imágenes inexistentes o incompatibles** — Utilizar inicialmente recursos disponibles localmente o imágenes de prueba controladas y evitar depender de URLs externas durante esta feature.
@@ -72,4 +98,8 @@ La arquitectura se preparará para que posteriormente los datos locales puedan s
 
 * **Confusión entre catálogo y detalle de producto** — Mantener la tarjeta del catálogo limitada a la información necesaria para descubrir el producto. La información completa pertenecerá a la Feature 009.
 
-* **Introducir funcionalidades antes de tiempo** — Mantener fuera de esta feature búsqueda, filtros, carrito, pagos, autenticación y backend.
+* **Introducir funcionalidades antes de tiempo** — Mantener fuera de esta feature búsqueda, filtros avanzados, carrito, pagos, autenticación y backend.
+
+* **Rutas con parámetros inconsistentes** — Centralizar los nombres de ruta y parámetros en el navegador para evitar errores al navegar entre pantallas.
+
+* **Catálogo Mujer aparentemente vacío o roto** — Diferenciar claramente el estado vacío informativo ("Próximamente") de un error de carga.

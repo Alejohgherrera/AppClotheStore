@@ -12,7 +12,7 @@
 
 * [x] Incluir productos masculinos en los datos iniciales.
 
-* [ ] Incluir productos femeninos en los datos iniciales.
+* [x] Incluir productos femeninos en los datos iniciales.
 
 * [x] Incluir nombre, precio, categoría, imagen y disponibilidad en cada producto.
 
@@ -53,6 +53,22 @@
 * [x] Mover la Feature 006 de "Próximas" a "En curso" en `../../constitution/roadmap.md` al comenzar la implementación.
 
 * [ ] Mover la Feature 006 de "En curso" a "Hecho" en `../../constitution/roadmap.md` cuando todos los criterios de aceptación estén cumplidos.
+
+## Extensión — Navegación por género y categorías
+
+* [x] Extender `spec.md` y `plan.md` con la navegación Hombre/Mujer → categorías → productos.
+
+* [x] Crear `src/data/categories.js` con géneros, categorías y función de filtrado.
+
+* [x] Crear los componentes reutilizables `GenderCard` y `CategoryCard`.
+
+* [x] Crear las pantallas `GenderSelectScreen`, `CategoriesScreen` y `ProductListScreen`.
+
+* [x] Actualizar `AppNavigator.js` con las rutas parametrizadas y títulos dinámicos.
+
+* [x] Implementar el estado vacío para categorías sin productos (catálogo Mujer).
+
+* [ ] Validar visualmente el flujo completo: género → categoría → lista, y navegación hacia atrás.
 
 ## Mantenimiento
 

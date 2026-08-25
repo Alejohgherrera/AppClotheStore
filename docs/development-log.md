@@ -175,6 +175,81 @@ Constitución inicial del proyecto definida.
 
 ---
 
+## 2026-08-25 — Feature 006 · Extensión: navegación por género y categorías
+
+### Actividad
+
+Se extendió el catálogo con exploración jerárquica: selección de género (Hombre/Mujer) → rejilla de categorías con portada (Boxers, Gorras, Camisetas, Polos) → lista filtrada de productos.
+
+### Decisiones
+
+* El alcance se amplía dentro de la Feature 006 en lugar de abrir una feature nueva.
+* Los datos de categorías viven en `src/data/categories.js`, separados de la interfaz.
+* El filtrado combina género y categoría; los productos Unisex aparecen en ambos catálogos.
+* Las categorías sin productos muestran estado vacío "Próximamente" (catálogo Mujer durante su carga inicial).
+* Las portadas del catálogo Mujer reutilizan imágenes existentes hasta incorporar las fotos femeninas pendientes.
+
+### Archivos creados / modificados
+
+```text
+src/data/categories.js                 (nuevo)
+src/components/GenderCard.js           (nuevo)
+src/components/CategoryCard.js         (nuevo)
+src/screens/GenderSelectScreen.js      (nuevo)
+src/screens/CategoriesScreen.js        (nuevo)
+src/screens/ProductListScreen.js       (nuevo)
+src/navigation/AppNavigator.js         (rutas Catalog/Categories/Products con parámetros)
+src/screens/CatalogScreen.js           (eliminado; sustituido por el nuevo flujo)
+spec/features/006-catalogo-productos/  (spec.md, plan.md, tasks.md extendidos)
+```
+
+### Validaciones
+
+1. Bundle Metro vía `npx expo export`: Android (849 módulos) e iOS (851 módulos), 0 errores.
+2. Verificación de que no quedan referencias a `CatalogScreen` eliminada.
+
+### Pendiente
+
+* Validación visual del usuario en Expo Go (género → categoría → lista → atrás).
+* Incorporación de fotos de mujer y cierre de los criterios restantes de la Feature 006.
+
+---
+
+## 2026-08-25 — Feature 006 · Datos femeninos y reestructuración de assets
+
+### Actividad
+
+El usuario reorganizó `assets/products/` en carpetas por género (`Hombre/` y `Mujer/`) e incorporó las fotografías femeninas. Se actualizaron los datos del catálogo para reflejar la nueva estructura.
+
+### Cambios
+
+* Rutas de imágenes de hombre actualizadas a `assets/products/Hombre/<categoria>/`.
+* 15 productos femeninos añadidos a `src/data/products.js`: 3 corsets, 5 jeans y 7 vestidos (precios provisionales pendientes de confirmación del usuario).
+* `src/data/categories.js`: el catálogo Mujer pasa de las categorías provisionales a sus propias categorías (Corsets, Jeans, Vestidos) con portadas propias.
+* `spec.md` actualizado: cada género muestra únicamente sus categorías definidas en datos; los productos Unisex aparecen donde estén incluidos, con filtro por género aplicado.
+
+### Archivos modificados
+
+```text
+src/data/products.js                   (rutas Hombre/ + productos femeninos)
+src/data/categories.js                 (categorías Mujer definitivas)
+spec/features/006-catalogo-productos/spec.md
+spec/features/006-catalogo-productos/tasks.md
+docs/development-log.md
+```
+
+### Validaciones
+
+1. Bundle Metro vía `npx expo export`: Android e iOS, 0 errores.
+
+### Pendiente
+
+* Validación visual del flujo completo en Expo Go.
+* Confirmación de precios y disponibilidad de los productos femeninos.
+* Limpieza de archivos sobrantes en assets (`.htm`, imagen duplicada, imagen sin usar).
+
+---
+
 # 7. Feature 002 — Sistema visual / Theme
 
 **Estado:** Completada
@@ -383,7 +458,7 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 
 | Nº  | Feature                | Estado     |
 | --- | ---------------------- | ---------- |
-| —   | —                      | —          |
+| 006 | Catálogo de productos  | 🔜 En curso |
 
 ---
 
