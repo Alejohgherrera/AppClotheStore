@@ -1,6 +1,6 @@
 # 006 · Catálogo de productos
 
-**Estado:** propuesta
+**Estado:** completada
 
 ## Qué hace
 

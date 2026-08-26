@@ -46,13 +46,13 @@
 
 * [x] Validar que la aplicación continúe iniciando correctamente.
 
-* [ ] Validar todos los criterios de aceptación definidos en `spec.md`.
+* [x] Validar todos los criterios de aceptación definidos en `spec.md`.
 
 * [ ] Actualizar la documentación del proyecto si se toma alguna decisión arquitectónica relevante.
 
 * [x] Mover la Feature 006 de "Próximas" a "En curso" en `../../constitution/roadmap.md` al comenzar la implementación.
 
-* [ ] Mover la Feature 006 de "En curso" a "Hecho" en `../../constitution/roadmap.md` cuando todos los criterios de aceptación estén cumplidos.
+* [x] Mover la Feature 006 de "En curso" a "Hecho" en `../../constitution/roadmap.md` cuando todos los criterios de aceptación estén cumplidos.
 
 ## Extensión — Navegación por género y categorías
 
@@ -68,7 +68,7 @@
 
 * [x] Implementar el estado vacío para categorías sin productos (catálogo Mujer).
 
-* [ ] Validar visualmente el flujo completo: género → categoría → lista, y navegación hacia atrás.
+* [x] Validar visualmente el flujo completo: género → categoría → lista, y navegación hacia atrás.
 
 ## Mantenimiento
 
