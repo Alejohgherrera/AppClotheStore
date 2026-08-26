@@ -441,6 +441,84 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 | 2026-08-24 | Bundle Metro vía `npx expo export` (iOS y Android) | Aprobado: 828 módulos, 0 errores | 004 |
 | 2026-08-24 | Validación visual iOS Expo Go: Home → Detalle → atrás, consola limpia | Aprobado (tras corrección del tema de navegación) | 004 |
 | 2026-08-24 | Validación visual Android Expo Go: Home → Detalle → atrás | Aprobado | 004 |
+| 2026-08-26 | Bundle Metro vía `npx expo export` (iOS y Android) tras limpieza de assets | Aprobado: 0 errores | 006 |
+| 2026-08-26 | Validación visual en Expo Go del flujo Catálogo → Género → Categoría → Lista → atrás | Aprobado (usuario) | 006 |
+| 2026-08-26 | Bundle Metro vía `npx expo export --platform all` tras refactor a `imagenes[]` | Aprobado: 0 errores | 005 |
+| 2026-08-26 | Verificación estructural del modelo (script Node) | Aprobado: 31 productos, IDs únicos, todos los campos presentes, 0 restos de `imagen` singular | 005 |
+
+---
+
+## 2026-08-26 — Feature 006 · Cierre
+
+### Actividad
+
+Cierre de la Feature 006 tras validación visual exitosa en Expo Go. Se completó la limpieza de assets sobrantes y se actualizó la documentación.
+
+### Cambios
+
+* Eliminados 3 archivos sobrantes de `assets/products/Hombre/`:
+  - `oversided/napbrand-t-shirt-oversized-men-black.htm` (archivo HTML sobrante)
+  - `gorras/salvator-polo-men-white-6722502.webp` (duplicado; ya existe en `polos/`)
+  - `gorras/SHADIA_SALSA_FRENTE.webp` (sin usar)
+* `spec/features/006-catalogo-productos/spec.md`: estado actualizado a "completada".
+* `spec/features/006-catalogo-productos/tasks.md`: checklist completado.
+* `docs/development-log.md` y `spec/constitution/roadmap.md`: Feature 006 movida a "Hecho".
+* Los precios de productos femeninos quedan pendientes de confirmación (precios provisionales en `src/data/products.js`).
+
+### Validaciones
+
+1. Bundle Metro vía `npx expo export --platform all`: Android e iOS, 0 errores.
+2. Validación visual en Expo Go del flujo completo: Género → Categoría → Lista de productos → atrás. Aprobado.
+
+### Pendiente
+
+* Confirmación de precios definitivos de los productos femeninos.
+
+---
+
+## 2026-08-26 — Feature 005 · Modelo de productos
+
+### Actividad
+
+Se definió y consolidó el modelo de datos de producto en `src/data/products.js`, alineado con los criterios de aceptación de `spec.md`. Se incorporó el campo `descripcion` y se refactorizó el campo `imagen` (singular) a `imagenes` (array) para representar una o varias imágenes por producto, requisito explícito del spec.
+
+### Decisiones
+
+* **Estructura de imágenes como array** — Adoptar `imagenes: [require(...)]` desde el inicio permite evolucionar hacia galería de imágenes, variantes visuales y detalle de producto (Feature 009) sin cambiar la firma del modelo.
+* **Sin normalización de campos previos** — Se conserva el campo `genero` (Hombre | Mujer | Unisex) usado por la Feature 006 para el filtrado. Este campo no es parte del modelo definido por la Feature 005, pero eliminarlo aquí rompería la Feature 006 ya completada.
+* **Datos identificados como de desarrollo** — El array de 31 productos en `src/data/products.js` se mantiene como dataset de desarrollo hasta que exista una fuente de datos real (backend).
+* **Sin cambios arquitectónicos** — El modelo vive en `src/data/`, separado de `App.js`, componentes y pantallas, tal como exige la constitución.
+
+### Cambios
+
+* `src/data/products.js`: añadido campo `descripcion` a los 31 productos; renombrado `imagen` → `imagenes` (array) en los 31 productos.
+* `src/components/ProductCard.js`: adaptado el consumo a `imagenes[0]`.
+* `spec/features/005-modelo-de-productos/spec.md`: estado a "completada".
+* `spec/features/005-modelo-de-productos/tasks.md`: checklist finalizado.
+* `docs/development-log.md` y `spec/constitution/roadmap.md`: Feature 005 movida a "Hecho".
+
+### Archivos modificados
+
+```text
+src/data/products.js                                  (descripcion + imagenes[])
+src/components/ProductCard.js                         (consumo de imagenes[0])
+spec/features/005-modelo-de-productos/spec.md
+spec/features/005-modelo-de-productos/tasks.md
+spec/constitution/roadmap.md                          (005 a "Hecho")
+docs/development-log.md
+```
+
+### Validaciones
+
+1. Bundle Metro vía `npx expo export --platform all`: Android e iOS, 0 errores tras la refactorización a `imagenes[]`.
+2. Verificación estructural (script Node sobre `src/data/products.js`): 31 productos, 31 IDs únicos, 31 campos `descripcion`, 31 campos `imagenes` como array, 31 campos `disponible`, 0 restos del campo `imagen` singular.
+3. Reutilización confirmada: `src/components/ProductCard.js` y `src/data/categories.js` importan `products` desde `src/data/products.js` sin redefinir la estructura.
+
+### Decisiones técnicas
+
+| Fecha      | Decisión                                | Motivo                                                      | Feature |
+| ---------- | --------------------------------------- | ----------------------------------------------------------- | ------- |
+| 2026-08-26 | Imágenes como array (`imagenes: []`)    | Cumplir criterio de "una o varias imágenes" y permitir galería futura sin cambiar la firma del modelo | 005 |
 
 ---
 
@@ -451,14 +529,14 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 | 001 | Constitución SDD | ✅ Completada | 2026-08-23 |
 | 002 | Sistema visual / Theme | ✅ Completada | 2026-08-23 |
 | 004 | Navegación inicial | ✅ Completada | 2026-08-24 |
+| 005 | Modelo de productos | ✅ Completada | 2026-08-26 |
+| 006 | Catálogo de productos | ✅ Completada | 2026-08-26 |
 
 ---
 
 # 13. Features en desarrollo
 
-| Nº  | Feature                | Estado     |
-| --- | ---------------------- | ---------- |
-| 006 | Catálogo de productos  | 🔜 En curso |
+*Sección vacía: no hay features "en curso" en este momento.*
 
 ---
 

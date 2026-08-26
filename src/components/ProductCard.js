@@ -3,13 +3,13 @@ import { colors, radius, spacing, typography } from '../theme';
 import { formatPrice } from '../data/products';
 
 export default function ProductCard({ producto }) {
-  const { imagen, nombre, precio, categoria, disponible } = producto;
+  const { imagenes, nombre, precio, categoria, disponible } = producto;
 
   return (
     <View style={styles.card}>
       <View style={styles.imageContainer}>
         <Image
-          source={imagen}
+          source={imagenes[0]}
           style={[styles.image, !disponible && styles.imageUnavailable]}
           resizeMode="cover"
         />

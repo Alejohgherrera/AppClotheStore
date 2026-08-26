@@ -14,11 +14,13 @@
 
 4. **004 · Navegación inicial** — Configurar la navegación principal de ClotheStore en `src/navigation/`.
 
+5. **005 · Modelo de productos** — Definir la estructura de datos necesaria para representar productos, categorías, variantes, tallas, colores, precios e inventario.
+
+6. **006 · Catálogo de productos** — Mostrar las prendas disponibles mediante una interfaz de exploración organizada.
+
 ## En curso 🔜
 
 *Lo próximo a abordar. Idealmente una sola feature "en curso" a la vez.*
-
-6. **006 · Catálogo de productos** — Mostrar las prendas disponibles mediante una interfaz de exploración organizada.
 
 ## Próximas 📋
 
@@ -27,8 +29,6 @@
 ### FASE 1 — Fundamentos
 
 ### FASE 2 — Catálogo
-
-5. **005 · Modelo de productos** — Definir la estructura de datos necesaria para representar productos, categorías, variantes, tallas, colores, precios e inventario.
 
 7. **007 · Categorías y filtros** — Permitir explorar productos por categorías y aplicar filtros relevantes.
 
