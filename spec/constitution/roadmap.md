@@ -18,6 +18,8 @@
 
 6. **006 · Catálogo de productos** — Mostrar las prendas disponibles mediante una interfaz de exploración organizada.
 
+7. **007 · Categorías y filtros** — Extender el modelo de productos con tallas y colores, e implementar un sistema de filtros y ordenamiento en el catálogo.
+
 ## En curso 🔜
 
 *Lo próximo a abordar. Idealmente una sola feature "en curso" a la vez.*

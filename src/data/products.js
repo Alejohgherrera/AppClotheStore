@@ -8,6 +8,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/boxer/catterick-boxer-men-black-8195775.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'pack-boxers-catterick-bn',
@@ -18,6 +20,11 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/boxer/catterick-pack-boxer-men-black-white-black-3583792.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [
+      { nombre: 'Negro', codigo: '#000000' },
+      { nombre: 'Blanco', codigo: '#FFFFFF' },
+    ],
   },
   {
     id: 'boxer-catterick-blanco',
@@ -28,6 +35,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/boxer/CATTERTICK_WHITE_FRENTE_FP.webp')],
     disponible: false,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Blanco', codigo: '#FFFFFF' }],
   },
   {
     id: 'gorra-aksha-negra',
@@ -38,6 +47,8 @@ export const products = [
     genero: 'Unisex',
     imagenes: [require('../../assets/products/Hombre/gorras/aksha-cap-unisex-black-7289320.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'gorra-miles-negra',
@@ -48,6 +59,8 @@ export const products = [
     genero: 'Unisex',
     imagenes: [require('../../assets/products/Hombre/gorras/miles-cap-unisex-black-2064798.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'gorra-vitalis-negra',
@@ -58,6 +71,8 @@ export const products = [
     genero: 'Unisex',
     imagenes: [require('../../assets/products/Hombre/gorras/vitalis-cap-unisex-black-7424026.webp')],
     disponible: false,
+    tallas: ['S', 'M', 'L'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'gorra-xanthus-blanca',
@@ -68,6 +83,8 @@ export const products = [
     genero: 'Unisex',
     imagenes: [require('../../assets/products/Hombre/gorras/xanthus-cap-unisex-white-5593220.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L'],
+    colores: [{ nombre: 'Blanco', codigo: '#FFFFFF' }],
   },
   {
     id: 'camiseta-napbrand-beige',
@@ -78,6 +95,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/oversided/napbrand-t-shirt-oversized-men-beige-1233581.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Beige', codigo: '#D4B896' }],
   },
   {
     id: 'camiseta-napbrand-negra',
@@ -88,6 +107,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/oversided/napbrand-t-shirt-oversized-men-black-4058712.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'camiseta-obsidian-gris',
@@ -98,6 +119,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/oversided/obsidian-t-shirt-oversized-men-cinder-8774159.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Gris', codigo: '#808080' }],
   },
   {
     id: 'polo-marcus-desert',
@@ -108,6 +131,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/polos/marcus-polo-men-desert-7978309.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Desierto', codigo: '#C9A875' }],
   },
   {
     id: 'polo-rexx-negro',
@@ -118,6 +143,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/polos/rexx-polo-men-black-3672128.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'polo-rexx-blanco',
@@ -128,6 +155,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/polos/rexx-polo-men-egret-8691077.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Blanco', codigo: '#FFFFFF' }],
   },
   {
     id: 'polo-salvator-negro',
@@ -138,6 +167,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/polos/salvator-polo-men-black-2893698.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'polo-salvator-rosa',
@@ -148,6 +179,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/polos/salvator-polo-men-rose-quartz-8184012.webp')],
     disponible: false,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Rosa', codigo: '#E0BFB8' }],
   },
   {
     id: 'polo-salvator-blanco',
@@ -158,6 +191,8 @@ export const products = [
     genero: 'Hombre',
     imagenes: [require('../../assets/products/Hombre/polos/salvator-polo-men-white-6722502.webp')],
     disponible: true,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: [{ nombre: 'Blanco', codigo: '#FFFFFF' }],
   },
   {
     id: 'corset-adwoa-negro',
@@ -168,6 +203,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Corset/adwoa-corset-women-black-8494477.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'corset-tabita-negro',
@@ -178,6 +215,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Corset/tabita-corset-women-black-9426480.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'corset-tabita-blanco',
@@ -188,6 +227,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Corset/tabita-corset-women-white-7782775.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Blanco', codigo: '#FFFFFF' }],
   },
   {
     id: 'jean-aliyah-denim',
@@ -198,6 +239,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Jeans/ALIYAHBLUEDENIMFRENTE.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Azul Denim', codigo: '#4A6FA5' }],
   },
   {
     id: 'jean-collins-denim',
@@ -208,6 +251,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Jeans/collins-jeans-women-blue-denim-2571273.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Azul Denim', codigo: '#4A6FA5' }],
   },
   {
     id: 'jean-romy-denim',
@@ -218,6 +263,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Jeans/romy-jean-women-blue-denim-2991839.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Azul Denim', codigo: '#4A6FA5' }],
   },
   {
     id: 'jean-scarlett-denim',
@@ -228,6 +275,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Jeans/SCARLETTBLUEDENIMFRENTE.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Azul Denim', codigo: '#4A6FA5' }],
   },
   {
     id: 'jean-visus-negro',
@@ -238,6 +287,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Jeans/visus-jean-women-black-5511958.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'vestido-blom-blanco',
@@ -248,6 +299,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Vestidos/blom-dress-women-white-8198453.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Blanco', codigo: '#FFFFFF' }],
   },
   {
     id: 'vestido-dinasty-negro',
@@ -258,6 +311,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Vestidos/dinasty-dress-women-black-6236277.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'vestido-dinasty-lila',
@@ -268,6 +323,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Vestidos/dinasty-dress-women-pale-lilac-8437967.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Lila', codigo: '#C8A2C8' }],
   },
   {
     id: 'vestido-kesmez-taupe',
@@ -278,6 +335,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Vestidos/kesmez-dress-women-simply-taupe-3662301.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Taupe', codigo: '#B5A395' }],
   },
   {
     id: 'vestido-opal-negro',
@@ -288,6 +347,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Vestidos/OPALBLACKFRENTE.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'vestido-vico-negro',
@@ -298,6 +359,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Vestidos/vico-dress-women-black-8959190.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Negro', codigo: '#000000' }],
   },
   {
     id: 'vestido-vodianova-crema',
@@ -308,6 +371,8 @@ export const products = [
     genero: 'Mujer',
     imagenes: [require('../../assets/products/Mujer/Vestidos/vodianova-dress-women-irish-cream-3002954.webp')],
     disponible: true,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: [{ nombre: 'Crema', codigo: '#F5E6D3' }],
   },
 ];
 
