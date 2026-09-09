@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing, typography } from '../theme';
 import { getProductsByGenderAndCategory } from '../data/categories';
@@ -15,13 +15,14 @@ import FilterChip from '../components/FilterChip';
 import FilterBar from '../components/FilterBar';
 import FilterModal from '../components/FilterModal';
 import SortModal from '../components/SortModal';
+import SearchBar from '../components/SearchBar';
 
-export default function ProductListScreen({ route }) {
+export default function ProductListScreen({ route, navigation }) {
   const { genero, categoria } = route.params;
   const { getFiltersFor, setFiltersFor, resetFiltersFor } = useFilters();
 
   const filters = getFiltersFor(genero, categoria);
-  const baseProducts = getProductsByGenderAndCategory(genero.nombre, categoria.nombre);
+  const baseProducts = getProductsByGenderAndCategory(genero.nombre, categoria);
 
   const priceRange = useMemo(() => getPriceRange(baseProducts), [baseProducts]);
 
@@ -66,10 +67,26 @@ export default function ProductListScreen({ route }) {
         setFiltersFor(genero, categoria, { ...filters, colores: [] });
       } else if (key === 'disponibles') {
         setFiltersFor(genero, categoria, { ...filters, soloDisponibles: false });
+      } else if (key === 'busqueda') {
+        setFiltersFor(genero, categoria, { ...filters, busqueda: '' });
       }
     },
     [genero, categoria, filters, priceRange, setFiltersFor],
   );
+
+  const handleSearch = useCallback(
+    (text) => {
+      setFiltersFor(genero, categoria, { ...filters, busqueda: text });
+    },
+    [genero, categoria, filters, setFiltersFor],
+  );
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: `${genero.nombre} › ${categoria.nombre}`,
+      headerBackTitle: 'Atrás',
+    });
+  }, [genero, categoria, navigation]);
 
   if (baseProducts.length === 0) {
     return (
@@ -81,6 +98,8 @@ export default function ProductListScreen({ route }) {
       </View>
     );
   }
+
+  const noResults = filteredProducts.length === 0 && (filters.busqueda || activeCount > 0);
 
   return (
     <View style={styles.container}>

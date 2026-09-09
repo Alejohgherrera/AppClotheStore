@@ -12,7 +12,17 @@ export const DEFAULT_FILTERS = {
   colores: [],
   soloDisponibles: false,
   sortBy: 'default',
+  busqueda: '',
 };
+
+export function normalizeText(text) {
+  if (typeof text !== 'string') return '';
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
 
 export function getPriceRange(products) {
   if (!products || products.length === 0) return { min: 0, max: 0 };
@@ -52,6 +62,19 @@ export function applyFilters(products, filters, priceRange) {
 
   if (filters.soloDisponibles) {
     filtered = filtered.filter((p) => p.disponible);
+  }
+
+  if (filters.busqueda && filters.busqueda.trim()) {
+    const query = normalizeText(filters.busqueda);
+    filtered = filtered.filter((p) => {
+      const nombre = normalizeText(p.nombre);
+      const descripcion = normalizeText(p.descripcion);
+      const categoria = normalizeText(p.categoria);
+      const tallas = (p.tallas || []).map((t) => normalizeText(t)).join(' ');
+      const colores = (p.colores || []).map((c) => normalizeText(c.nombre)).join(' ');
+      const searchableText = `${nombre} ${descripcion} ${categoria} ${tallas} ${colores}`;
+      return searchableText.includes(query);
+    });
   }
 
   if (filters.sortBy === 'price_asc') {

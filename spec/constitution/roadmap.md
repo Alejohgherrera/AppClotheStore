@@ -24,6 +24,8 @@
 
 *Lo próximo a abordar. Idealmente una sola feature "en curso" a la vez.*
 
+8. **008 · Búsqueda** — Permitir buscar productos por nombre, categoría y atributos disponibles.
+
 ## Próximas 📋
 
 *Features planificadas que respetan la constitución. Cada feature se crea como `features/NNN-nombre-feature/` con `spec.md`, `plan.md` y `tasks.md` antes de tocar código.*
@@ -31,10 +33,6 @@
 ### FASE 1 — Fundamentos
 
 ### FASE 2 — Catálogo
-
-7. **007 · Categorías y filtros** — Permitir explorar productos por categorías y aplicar filtros relevantes.
-
-8. **008 · Búsqueda** — Permitir buscar productos por nombre, categoría y atributos disponibles.
 
 9. **009 · Detalle de producto** — Mostrar información completa del producto, imágenes, precio, descripción y opciones disponibles.
 
