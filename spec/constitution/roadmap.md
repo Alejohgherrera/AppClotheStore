@@ -20,10 +20,6 @@
 
 7. **007 · Categorías y filtros** — Extender el modelo de productos con tallas y colores, e implementar un sistema de filtros y ordenamiento en el catálogo.
 
-## En curso 🔜
-
-*Lo próximo a abordar. Idealmente una sola feature "en curso" a la vez.*
-
 8. **008 · Búsqueda** — Permitir buscar productos por nombre, categoría y atributos disponibles.
 
 ## Próximas 📋

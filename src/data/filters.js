@@ -122,5 +122,9 @@ export function getActiveFilterChips(filters, priceRange) {
     chips.push({ key: 'disponibles', label: 'Solo disponibles' });
   }
 
+  if (filters.busqueda && filters.busqueda.trim()) {
+    chips.push({ key: 'busqueda', label: `Buscar: "${filters.busqueda}"` });
+  }
+
   return chips;
 }

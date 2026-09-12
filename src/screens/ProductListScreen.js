@@ -22,7 +22,7 @@ export default function ProductListScreen({ route, navigation }) {
   const { getFiltersFor, setFiltersFor, resetFiltersFor } = useFilters();
 
   const filters = getFiltersFor(genero, categoria);
-  const baseProducts = getProductsByGenderAndCategory(genero.nombre, categoria);
+  const baseProducts = getProductsByGenderAndCategory(genero.nombre, categoria.nombre);
 
   const priceRange = useMemo(() => getPriceRange(baseProducts), [baseProducts]);
 
@@ -36,6 +36,11 @@ export default function ProductListScreen({ route, navigation }) {
 
   const activeChips = getActiveFilterChips(filters, priceRange);
   const activeCount = countActiveFilters(filters);
+
+  // Limpiar búsqueda al cambiar de categoría
+  useEffect(() => {
+    resetFiltersFor(genero, categoria);
+  }, [genero, categoria, resetFiltersFor]);
 
   const handleApplyFilters = useCallback(
     (newFilters) => {
@@ -99,8 +104,6 @@ export default function ProductListScreen({ route, navigation }) {
     );
   }
 
-  const noResults = filteredProducts.length === 0 && (filters.busqueda || activeCount > 0);
-
   return (
     <View style={styles.container}>
       <ScrollView
@@ -126,6 +129,35 @@ export default function ProductListScreen({ route, navigation }) {
           </View>
         )}
 
+        <SearchBar value={filters.busqueda} onChange={handleSearch} />
+
+        <FlatList
+          data={filteredProducts}
+          keyExtractor={(producto) => producto.id}
+          renderItem={({ item }) => <ProductCard producto={item} />}
+          numColumns={2}
+          columnWrapperStyle={styles.column}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            baseProducts.length === 0 ? (
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsTitle}>Sin productos</Text>
+                <Text style={styles.noResultsMessage}>
+                  Aún no hay prendas en esta categoría.
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsTitle}>Sin resultados</Text>
+                <Text style={styles.noResultsMessage}>
+                  Ajusta los filtros para ver más productos.
+                </Text>
+              </View>
+            )
+          }
+        />
+
         <FilterBar
           onPressFilters={() => setFilterModalVisible(true)}
           onPressSort={() => setSortModalVisible(true)}
@@ -133,22 +165,6 @@ export default function ProductListScreen({ route, navigation }) {
         />
       </ScrollView>
 
-      <FlatList
-        data={filteredProducts}
-        keyExtractor={(producto) => producto.id}
-        renderItem={({ item }) => <ProductCard producto={item} />}
-        numColumns={2}
-        columnWrapperStyle={styles.column}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.noResultsContainer}>
-            <Text style={styles.noResultsTitle}>Sin resultados</Text>
-            <Text style={styles.noResultsMessage}>
-              Ajusta los filtros para ver más productos.
-            </Text>
-          </View>
-        }
       />
 
       <FilterModal

@@ -9,6 +9,7 @@ export const SearchBar = ({ onChange, placeholder = 'Buscar productos…', value
 
   return (
     <View style={styles.container}>
+      <Text style={styles.icon}>🔍</Text>
       <TextInput
         style={styles.input}
         placeholder={placeholder}
@@ -34,6 +35,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  icon: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginRight: spacing.sm,
   },
   input: {
     flex: 1,

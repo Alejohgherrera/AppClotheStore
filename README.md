@@ -30,15 +30,16 @@ El proyecto se desarrollará progresivamente.
 
 * [x] Configuración inicial del proyecto.
 * [x] Sistema visual / Theme.
-* [ ] Arquitectura base de la aplicación.
-* [ ] Navegación inicial.
+* [x] Arquitectura base de la aplicación.
+* [x] Navegación inicial.
+* [x] Modelo de productos.
 
 ### 👕 Catálogo
 
-* [ ] Catálogo de productos.
-* [ ] Categorías.
-* [ ] Búsqueda.
-* [ ] Filtros.
+* [x] Catálogo de productos.
+* [x] Categorías.
+* [x] Búsqueda.
+* [x] Filtros.
 * [ ] Detalle de producto.
 * [ ] Tallas y variantes.
 * [ ] Gestión de stock.
@@ -260,11 +261,9 @@ También puedes utilizar **Expo Go** para probar la aplicación durante el desar
 
 ## 📋 Estado actual
 
-**Fase actual: Fundamentos**
+**Fase actual: Catálogo — Fase 2**
 
-La aplicación se encuentra en una etapa inicial de desarrollo.
-
-Actualmente se han establecido:
+La aplicación se encuentra en una etapa de desarrollo con las siguientes características implementadas:
 
 * Configuración inicial del proyecto.
 * Constitución del proyecto.
@@ -275,6 +274,13 @@ Actualmente se han establecido:
 * Sistema visual / Theme.
 * Repositorio Git.
 * Repositorio remoto en GitHub.
+* Navegación inicial con React Navigation.
+* Modelo de productos con tallas, colores y variantes.
+* Catálogo con navegación por género → categoría → lista de productos.
+* Filtros avanzados (precio, tallas, colores, disponibilidad, ordenamiento).
+* Búsqueda en tiempo real con normalización de texto (insensible a mayúsculas y acentos).
+* Persistencia de filtros en AsyncStorage.
+* Diseño visual premium con tokens centralizados en `src/theme/`.
 
 Las funcionalidades de comercio electrónico todavía se encuentran en desarrollo.
 

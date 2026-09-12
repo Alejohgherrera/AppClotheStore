@@ -441,10 +441,70 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 | 2026-08-24 | Bundle Metro vía `npx expo export` (iOS y Android) | Aprobado: 828 módulos, 0 errores | 004 |
 | 2026-08-24 | Validación visual iOS Expo Go: Home → Detalle → atrás, consola limpia | Aprobado (tras corrección del tema de navegación) | 004 |
 | 2026-08-24 | Validación visual Android Expo Go: Home → Detalle → atrás | Aprobado | 004 |
-| 2026-08-26 | Bundle Metro vía `npx expo export` (iOS y Android) tras limpieza de assets | Aprobado: 0 errores | 006 |
+| 2026-08-26 | Bundle Metro vía `npx expo export --platform all` tras limpieza de assets | Aprobado: 0 errores | 006 |
 | 2026-08-26 | Validación visual en Expo Go del flujo Catálogo → Género → Categoría → Lista → atrás | Aprobado (usuario) | 006 |
 | 2026-08-26 | Bundle Metro vía `npx expo export --platform all` tras refactor a `imagenes[]` | Aprobado: 0 errores | 005 |
 | 2026-08-26 | Verificación estructural del modelo (script Node) | Aprobado: 31 productos, IDs únicos, todos los campos presentes, 0 restos de `imagen` singular | 005 |
+| 2026-08-26 | Búsqueda: filtrado por nombre, descripción, categoría y atributos | Aprobado | 008 |
+| 2026-08-26 | Búsqueda: insensible a mayúsculas y acentos | Aprobado | 008 |
+| 2026-08-26 | Búsqueda: combinación con filtros y ordenamiento | Aprobado | 008 |
+| 2026-08-26 | Búsqueda: chip activo, limpiar y estado vacío diferenciado | Aprobado | 008 |
+| 2026-08-26 | `expo-doctor` (18 comprobaciones) | Aprobado | 008 |
+
+---
+
+## 2026-08-26 — Feature 008 · Búsqueda
+
+### Actividad
+
+Se implementó la búsqueda de productos dentro del catálogo. El usuario puede buscar prendas por nombre, descripción, categoría y atributos (tallas y colores) mediante un campo de búsqueda integrado en la pantalla de lista de productos.
+
+### Implementación
+
+* `src/components/SearchBar.js`: campo de texto con icono de búsqueda, placeholder "Buscar productos…" y botón de limpiar, usando los tokens de `src/theme/`.
+* `src/data/filters.js`: `DEFAULT_FILTERS` con campo `busqueda`, función `normalizeText` (NFD + eliminación de diacríticos + lowerCase), lógica de búsqueda en `applyFilters` (nombre, descripción, categoría, tallas, colores), y chip de búsqueda en `getActiveFilterChips`.
+* `src/screens/ProductListScreen.js`: integración del `SearchBar` con `FilterContext`, sincronización del término de búsqueda, chips de búsqueda activos, diferenciación de estados vacíos ("Sin productos" vs "Sin resultados"), y limpieza de búsqueda al cambiar de categoría.
+
+### Decisiones
+
+* La búsqueda se aplica después de los filtros pero antes del ordenamiento, respetando el orden correcto según el plan.
+* No se añaden dependencias externas; se reutiliza la infraestructura existente de `FilterContext`.
+* El término de búsqueda se limpia al cambiar de categoría para mantener coherencia con los filtros.
+
+### Archivos modificados
+
+```text
+src/components/SearchBar.js              (icono de búsqueda añadido)
+src/data/filters.js                       (chip de búsqueda en getActiveFilterChips)
+src/screens/ProductListScreen.js          (integración completa de búsqueda)
+spec/features/008-busqueda/tasks.md      (checklist finalizado)
+spec/constitution/roadmap.md              (008 movida a "Hecho")
+docs/development-log.md                   (entrada de Feature 008)
+```
+
+### Validaciones
+
+1. Bundle Metro vía `npx expo export --platform all`: Android e iOS, 0 errores.
+2. Búsqueda por nombre de producto: funcional.
+3. Búsqueda por descripción: funcional.
+4. Búsqueda por categoría: funcional.
+5. Búsqueda por atributos (tallas y colores): funcional.
+6. Búsqueda insensible a mayúsculas/minúsculas: funcional.
+7. Búsqueda con acentos (normalización NFD): funcional.
+8. Combinación con filtros activos: funcional.
+9. Chip de búsqueda activa mostrado en la interfaz: funcional.
+10. Limpieza de búsqueda al cambiar de categoría: funcional.
+11. Estado vacío diferenciado ("Sin productos" vs "Sin resultados"): funcional.
+
+### Problemas encontrados
+
+* El `SearchBar` original carecía de icono de búsqueda y no estaba renderizado en `ProductListScreen`. Se agregó el icono y se integró en el JSX.
+* `getActiveFilterChips` no incluía el término de búsqueda. Se agregó para permitir eliminar la búsqueda desde el chip.
+* El estado vacío no diferenciaba entre "sin productos" y "sin resultados". Se corrigió con `ListEmptyComponent` condicional.
+
+### Resultado
+
+Feature 008 completada: todos los criterios de aceptación de `spec.md` verificados. Movida a "Hecho" en `roadmap.md`.
 
 ---
 
@@ -528,9 +588,12 @@ docs/development-log.md
 | --- | ---------------- | ------------ | ---------- |
 | 001 | Constitución SDD | ✅ Completada | 2026-08-23 |
 | 002 | Sistema visual / Theme | ✅ Completada | 2026-08-23 |
+| 003 | Arquitectura base | ✅ Completada | 2026-08-23 |
 | 004 | Navegación inicial | ✅ Completada | 2026-08-24 |
 | 005 | Modelo de productos | ✅ Completada | 2026-08-26 |
 | 006 | Catálogo de productos | ✅ Completada | 2026-08-26 |
+| 007 | Categorías y filtros | ✅ Completada | 2026-08-26 |
+| 008 | Búsqueda | ✅ Completada | 2026-08-26 |
 
 ---
 
