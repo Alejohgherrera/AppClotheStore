@@ -50,6 +50,8 @@ AppClotheStore es una aplicación móvil de comercio electrónico para una tiend
 
 - `src/context/`
   — Context API y estados globales de la aplicación, como carrito, favoritos y usuario.
+  - `CartContext.js` — estado global del carrito, persistencia en AsyncStorage, agregar/quitar productos y controlar cantidades.
+  - `FilterContext.js` — estado global de filtros, persistencia en AsyncStorage.
 
 - `src/data/`
   — datos iniciales y estructuras de datos utilizadas durante el desarrollo.
@@ -183,21 +185,21 @@ La aplicación debe evolucionar progresivamente desde un prototipo de tienda de 
 
 ### Fase 2 — Tienda
 
-- Página de inicio
-- Catálogo
-- Categorías
-- Detalle de producto
-- Carrito
-- Favoritos
-- Búsqueda
+- [x] Página de inicio
+- [x] Catálogo
+- [x] Categorías
+- [x] Detalle de producto
+- [x] Carrito
+- [x] Favoritos
+- [x] Búsqueda
 
 ### Fase 3 — Navegación y estado
 
-- React Navigation
-- Context API
-- Carrito global
-- Favoritos globales
-- Estado del usuario
+- [x] React Navigation
+- [x] Context API
+- [x] Carrito global
+- [x] Favoritos globales
+- [x] Estado del usuario
 
 ### Fase 4 — Backend
 
@@ -233,3 +235,20 @@ La aplicación debe evolucionar progresivamente desde un prototipo de tienda de 
 - Documentar decisiones arquitectónicas importantes.
 
 - Registrar dependencias importantes y explicar su propósito cuando sea necesario.
+
+## Funcionalidades implementadas — Carrito
+
+- **CartContext.js** (`src/context/CartContext.js`) — Context API global para el carrito de compras.
+  - Persistencia automática en AsyncStorage (`@clothestore/cart`).
+  - `addItem(producto, talla, color, cantidad)` — agrega producto al carrito (evita duplicados combinando cantidades).
+  - `removeItem(itemId)` — elimina ítem del carrito.
+  - `updateQuantity(itemId, cantidad)` — actualiza cantidad (elimina si cantidad <= 0).
+  - `clearCart()` — vacía el carrito completo.
+  - `items` — array de objetos `{ id, producto, talla, color, cantidad }`.
+  - `total` — suma de precio * cantidad.
+  - `count` — suma de cantidades.
+  - `hydrated` — indica si la carga inicial de AsyncStorage completó.
+
+- **ProductDetailScreen** — integra `addItem` al presionar "Agregar al carrito" con validación de talla y color obligatorios.
+
+- **Navegación** — Carrito accesible desde header (icono + badge con `count`).

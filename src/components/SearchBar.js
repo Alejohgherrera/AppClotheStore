@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Text } from 'react-native';
 import { colors, spacing, radius, typography } from '../theme';
 
-export const SearchBar = ({ onChange, placeholder = 'Buscar productos…', value = '' }) => {
+export default function SearchBar({ onChange, placeholder = 'Buscar productos…', value = '' }) {
   const handleClear = () => {
     onChange('');
   };

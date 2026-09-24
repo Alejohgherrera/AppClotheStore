@@ -1,12 +1,24 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { formatPrice } from '../data/products';
+import { useNavigation } from '@react-navigation/native';
 
 export default function ProductCard({ producto }) {
   const { imagenes, nombre, precio, categoria, disponible } = producto;
+  const navigation = useNavigation();
+
+  const handlePress = () => {
+    navigation.navigate('ProductDetail', { producto, genero: producto.genero, categoria });
+  };
 
   return (
-    <View style={styles.card}>
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        pressed && styles.cardPressed,
+      ]}
+      onPress={handlePress}
+    >
       <View style={styles.imageContainer}>
         <Image
           source={imagenes[0]}
@@ -19,6 +31,7 @@ export default function ProductCard({ producto }) {
           </View>
         )}
       </View>
+
       <View style={styles.info}>
         <Text style={styles.category} numberOfLines={1}>
           {categoria}
@@ -28,7 +41,7 @@ export default function ProductCard({ producto }) {
         </Text>
         <Text style={styles.price}>{formatPrice(precio)}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -70,7 +83,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   info: {
-    padding: spacing.sm + 4,
+    padding: spacing.md + 4,
     gap: 2,
   },
   category: {
@@ -86,5 +99,8 @@ const styles = StyleSheet.create({
     ...typography.highlight,
     color: colors.accent,
     marginTop: spacing.xs,
+  },
+  cardPressed: {
+    borderColor: colors.borderStrong,
   },
 });

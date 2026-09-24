@@ -106,65 +106,60 @@ export default function ProductListScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={(producto) => producto.id}
+        renderItem={({ item }) => <ProductCard producto={item} />}
+        numColumns={2}
+        columnWrapperStyle={styles.column}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[1]}
-      >
-        {activeChips.length > 0 && (
-          <View style={styles.chipsContainer}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipsScroll}
-            >
-              {activeChips.map((chip) => (
-                <FilterChip
-                  key={chip.key}
-                  label={chip.label}
-                  onRemove={() => handleRemoveChip(chip.key)}
-                />
-              ))}
-            </ScrollView>
+        ListHeaderComponent={
+          <View style={styles.headerContainer}>
+            {activeChips.length > 0 && (
+              <View style={styles.chipsContainer}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.chipsScroll}
+                >
+                  {activeChips.map((chip) => (
+                    <FilterChip
+                      key={chip.key}
+                      label={chip.label}
+                      onRemove={() => handleRemoveChip(chip.key)}
+                    />
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            <SearchBar value={filters.busqueda} onChange={handleSearch} />
+
+            <FilterBar
+              onPressFilters={() => setFilterModalVisible(true)}
+              onPressSort={() => setSortModalVisible(true)}
+              activeFiltersCount={activeCount}
+            />
           </View>
-        )}
-
-        <SearchBar value={filters.busqueda} onChange={handleSearch} />
-
-        <FlatList
-          data={filteredProducts}
-          keyExtractor={(producto) => producto.id}
-          renderItem={({ item }) => <ProductCard producto={item} />}
-          numColumns={2}
-          columnWrapperStyle={styles.column}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            baseProducts.length === 0 ? (
-              <View style={styles.noResultsContainer}>
-                <Text style={styles.noResultsTitle}>Sin productos</Text>
-                <Text style={styles.noResultsMessage}>
-                  Aún no hay prendas en esta categoría.
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.noResultsContainer}>
-                <Text style={styles.noResultsTitle}>Sin resultados</Text>
-                <Text style={styles.noResultsMessage}>
-                  Ajusta los filtros para ver más productos.
-                </Text>
-              </View>
-            )
-          }
-        />
-
-        <FilterBar
-          onPressFilters={() => setFilterModalVisible(true)}
-          onPressSort={() => setSortModalVisible(true)}
-          activeFiltersCount={activeCount}
-        />
-      </ScrollView>
-
+        }
+        ListEmptyComponent={
+          baseProducts.length === 0 ? (
+            <View style={styles.noResultsContainer}>
+              <Text style={styles.noResultsTitle}>Sin productos</Text>
+              <Text style={styles.noResultsMessage}>
+                Aún no hay prendas en esta categoría.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.noResultsContainer}>
+              <Text style={styles.noResultsTitle}>Sin resultados</Text>
+              <Text style={styles.noResultsMessage}>
+                Ajusta los filtros para ver más productos.
+              </Text>
+            </View>
+          )
+        }
       />
 
       <FilterModal
@@ -190,8 +185,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  scrollContent: {
-    paddingBottom: spacing.sm,
+  headerContainer: {
+    paddingBottom: spacing.xs,
   },
   chipsContainer: {
     backgroundColor: colors.background,
