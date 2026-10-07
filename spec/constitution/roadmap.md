@@ -30,7 +30,7 @@
 
 *Features abiertas para remediar código existente o completar su validación. No se consideran terminadas hasta cumplir todos sus criterios.*
 
-> Ninguna feature abierta en este momento.
+10. **010 · Tallas, variantes y stock** — Especificada, pendiente de implementación. Introduce inventario por variante en `src/data/stock.js`, deshabilita tallas y colores agotados en el detalle y valida el stock en el carrito.
 
 ## Próximas 📋
 
@@ -41,8 +41,6 @@
 *Sin features pendientes en esta fase.*
 
 ### FASE 2 — Catálogo
-
-10. **010 · Tallas, variantes y stock** — Gestionar tallas, colores, variantes y disponibilidad de los productos.
 
 ### FASE 3 — Backend y datos
 
