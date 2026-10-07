@@ -24,17 +24,21 @@
 
 9. **009 · Detalle de producto** — Consolidar el prototipo de detalle, sus estados de selección, disponibilidad, accesibilidad y comportamiento de compra.
 
+16. **016 · Carrito** — Remediar el prototipo local de carrito antes de continuar con las features remotas. Su persistencia y reglas definitivas de stock seguirán dependiendo de las Features 010–015.
+
 ## En curso
 
 *Features abiertas para remediar código existente o completar su validación. No se consideran terminadas hasta cumplir todos sus criterios.*
 
-16. **016 · Carrito** — Remediar el prototipo local de carrito antes de continuar con las features remotas. Su persistencia y reglas definitivas de stock seguirán dependiendo de las Features 010–015.
+> Ninguna feature abierta en este momento.
 
 ## Próximas 📋
 
 *Features planificadas que respetan la constitución. Cada feature se crea como `features/NNN-nombre-feature/` con `spec.md`, `plan.md` y `tasks.md` antes de tocar código.*
 
 ### FASE 1 — Fundamentos
+
+*Sin features pendientes en esta fase.*
 
 ### FASE 2 — Catálogo
 

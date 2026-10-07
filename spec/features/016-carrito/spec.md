@@ -1,6 +1,6 @@
 # 016 · Carrito
 
-**Estado:** en curso — remediación implementada y validada automáticamente; pendiente solo la validación visual manual en Android e iOS
+**Estado:** completada — validada automáticamente y visualmente en Android e iOS
 
 ## Qué hace
 

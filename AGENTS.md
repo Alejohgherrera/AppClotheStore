@@ -195,7 +195,7 @@ La aplicación debe evolucionar progresivamente desde un prototipo de tienda de 
 - [x] Catálogo
 - [x] Categorías
 - [x] Detalle de producto
-- [ ] Carrito — prototipo local en remediación
+- [x] Carrito
 - [ ] Favoritos
 - [x] Búsqueda
 
@@ -203,7 +203,7 @@ La aplicación debe evolucionar progresivamente desde un prototipo de tienda de 
 
 - [x] React Navigation
 - [x] Context API
-- [ ] Carrito global — prototipo local en remediación
+- [x] Carrito global — Context API con persistencia local
 - [ ] Favoritos globales
 - [ ] Estado del usuario
 
@@ -246,15 +246,39 @@ La aplicación debe evolucionar progresivamente desde un prototipo de tienda de 
 
 - **CartContext.js** (`src/context/CartContext.js`) — Context API global para el carrito de compras.
   - Persistencia automática en AsyncStorage (`@clothestore/cart`).
-  - `addItem(producto, talla, color, cantidad)` — agrega producto al carrito (evita duplicados combinando cantidades).
+  - `addItem(producto, talla, color, cantidad)` — valida disponibilidad, variante y cantidad antes de agregar; resuelve el producto canónico por identificador y fusiona la misma combinación producto + talla + color.
   - `removeItem(itemId)` — elimina ítem del carrito.
-  - `updateQuantity(itemId, cantidad)` — actualiza cantidad (elimina si cantidad <= 0).
+  - `updateQuantity(itemId, cantidad)` — exige enteros positivos; `cantidad === 0` elimina la línea.
   - `clearCart()` — vacía el carrito completo.
-  - `items` — array de objetos `{ id, producto, talla, color, cantidad }`.
+  - `items` — array de objetos `{ id, producto, talla, color, cantidad }` con `producto` siempre resuelto contra el catálogo canónico.
   - `total` — suma de precio * cantidad.
   - `count` — suma de cantidades.
-  - `hydrated` — indica si la carga inicial de AsyncStorage completó.
+  - `hydrated` — indica si la carga inicial de AsyncStorage completó. Toda mutación devuelve `NOT_HYDRATED` antes de ese momento.
+  - `normalizeCartItems` y `buildCartKey` — funciones puras exportadas para normalizar snapshots persistidos; descartan productos agotados, inexistentes, variantes no contempladas y cantidades inválidas.
 
-- **ProductDetailScreen** — integra `addItem` al presionar "Agregar al carrito" con validación de talla y color obligatorios.
+- **ProductDetailScreen** — integra `addItem` al presionar "Agregar al carrito" con validación de talla y color obligatorios, CTA deshabilitada si el producto está agotado o el carrito no ha hidratado, y feedback visible.
 
-- **Navegación** — Carrito accesible desde header (icono + badge con `count`).
+- **CartScreen** — estados separados de carga y vacío, cantidades con eliminación explícita, vaciado con confirmación y checkout deshabilitado hasta la Feature 018.
+
+- **Navegación** — Carrito accesible desde el header mediante `CartHeaderButton`, con badge de `count` y etiqueta accesible.
+
+---
+
+## Pruebas automatizadas
+
+- `npm test` ejecuta Jest con el preset `jest-expo` y `@testing-library/react-native`.
+- Las suites viven junto al código que verifican, en carpetas `__tests__` con el sufijo `-test.js`.
+- `render`, `fireEvent` y `renderHook` son asíncronos en la versión 14 de la librería y deben esperarse.
+
+```text
+src/data/__tests__/filters-test.js          (57 pruebas)
+src/context/__tests__/CartContext-test.js   (16 pruebas)
+src/context/__tests__/CartProvider-test.js  (32 pruebas)
+src/context/__tests__/FilterContext-test.js (18 pruebas)
+src/components/__tests__/FilterModal-test.js(23 pruebas)
+src/screens/__tests__/ProductDetailScreen-test.js (17 pruebas)
+src/screens/__tests__/CartScreen-test.js    (16 pruebas)
+src/navigation/__tests__/AppNavigator-test.js (10 pruebas)
+```
+
+Total: 189 pruebas.

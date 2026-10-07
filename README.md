@@ -46,7 +46,7 @@ El proyecto se desarrollará progresivamente.
 
 ### 🛒 Experiencia de compra
 
-* [ ] Carrito — prototipo local en remediación.
+* [x] Carrito.
 * [ ] Favoritos.
 * [ ] Gestión de cantidades.
 * [ ] Resumen de compra.

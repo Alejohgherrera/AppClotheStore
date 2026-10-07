@@ -453,6 +453,7 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 | 2026-10-07 | `npm test` (8 suites, 189 pruebas) | Aprobado: 189/189 | 007/008/009/016 |
 | 2026-10-07 | `npm run lint` | Aprobado: 0 errores, 0 avisos | 007/008/009/016 |
 | 2026-10-07 | Bundle Metro vía `npx expo export --platform all` tras la cobertura de 016 | Aprobado: bundles iOS y Android, 0 errores | 016 |
+| 2026-10-07 | Validación visual Expo Go Android e iOS: header → carrito → cantidades → eliminar → vaciar | Aprobado (usuario) | 016 |
 | 2026-10-07 | Bundle Metro vía `npx expo export --platform all` | Aprobado: bundles iOS y Android, 0 errores | 009 |
 | 2026-10-07 | `expo-doctor` (18 comprobaciones) | Aprobado: 18/18 | 009 |
 | 2026-10-07 | Validación visual Expo Go Android e iOS: catálogo → detalle → carrito | Aprobado (usuario) | 009 |
@@ -796,11 +797,13 @@ La primera versión de la prueba de descarte de líneas inválidas asumía que e
 1. `npm test`: 8 suites, 189 pruebas, todas aprobadas.
 2. `npm run lint`: 0 errores y 0 avisos.
 3. `npx expo export --platform all`: bundles iOS y Android generados, 0 errores.
+4. Validación visual del flujo de carrito en Android e iOS: aprobado (usuario). Se comprobó la apertura desde el header, la modificación de cantidades, la eliminación de una línea, el vaciado con confirmación y la actualización del badge.
 
-### Pendiente
+### Resultado
 
-- Validación visual del flujo de carrito en Android e iOS por parte del usuario: abrir desde el header, modificar cantidades, eliminar una línea, vaciar con confirmación y comprobar que la badge se actualiza.
-- Mover la Feature 016 a "Hecho" en el roadmap una vez completada esa validación.
+Feature 016 completada: los 17 criterios de aceptación de `spec.md` están cumplidos y verificados mediante pruebas automatizadas, compilación y validación visual en ambos dispositivos. Movida a "Hecho" en `roadmap.md`.
+
+Las reglas definitivas de stock por variante siguen dependiendo de la Feature 010 y del backend de las Features 011–015, tal como anticipates el `plan.md`.
 
 ---
 
@@ -817,14 +820,16 @@ La primera versión de la prueba de descarte de líneas inválidas asumía que e
 | 007 | Categorías y filtros | ✅ Completada | 2026-08-26 |
 | 008 | Búsqueda | ✅ Completada | 2026-08-26 |
 | 009 | Detalle de producto | ✅ Completada | 2026-10-07 |
+| 016 | Carrito             | ✅ Completada | 2026-10-07 |
 
 ---
 
 # 13. Features en desarrollo
 
-| Nº  | Feature             | Estado  | Fecha de apertura |
-| --- | ------------------- | ------- | ----------------- |
-| 016 | Carrito             | En curso | 2026-09-24 |
+| Nº  | Feature | Estado | Fecha de apertura |
+| --- | ------- | ------ | ----------------- |
+
+> Ninguna feature abierta en este momento.
 
 ---
 

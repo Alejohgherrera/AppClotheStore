@@ -51,13 +51,13 @@
 - [x] Añadir pruebas de navegación y estados visibles.
 - [x] Ejecutar lint y pruebas.
 - [x] Ejecutar `npx expo export --platform all`.
-- [ ] Validar visualmente el flujo en Android e iOS.
+- [x] Validar visualmente el flujo en Android e iOS.
 - [x] Comprobar que todos los criterios de `spec.md` estén cumplidos.
 
 ## Cierre
 
 - [x] Registrar la implementación y las validaciones en `docs/development-log.md`.
-- [ ] Actualizar el estado de la Feature 016 en el roadmap solo después de validar todos sus criterios.
+- [x] Actualizar el estado de la Feature 016 en el roadmap solo después de validar todos sus criterios.
 
 ## Notas de cierre
 
@@ -65,4 +65,4 @@
 - La cobertura se reparte en cuatro suites. `src/context/__tests__/CartContext-test.js` (16) verifica las funciones puras `buildCartKey` y `normalizeCartItems`. `src/context/__tests__/CartProvider-test.js` (32) monta el provider real con `renderHook` y cubre `addItem`, `updateQuantity`, `removeItem`, `clearCart`, el bloqueo previo a la hidratación y los derivados `count` y `total`. `src/navigation/__tests__/AppNavigator-test.js` (10) cubre el botón de cabecera, el badge y la navegación. `src/screens/__tests__/CartScreen-test.js` (16) cubre la pantalla, incluido el vaciado con confirmación.
 - `renderHook` de `@testing-library/react-native` v14 es asíncrono y devuelve una promesa; el resultado debe guardarse antes de los `act` para evitar perder la referencia al cambiar de render.
 - Una expectativa inicial Resultó incorrecta: el normalizador no conserva las líneas inválidas en el almacenamiento, las purga. La prueba se corrigió para documentar ese comportamiento, que es el correcto, ya que una línea de producto agotado no debe sobrevivir a la siguiente sesión.
-- Falta únicamente la validación visual manual en Android e iOS por parte del usuario antes de mover la feature a "Hecho" en el roadmap.
+- La validación visual del flujo de carrito en Android e iOS fue completada por el usuario el 2026-10-07: apertura desde el header, modificación de cantidades, eliminación de línea, vaciado con confirmación y actualización del badge.
