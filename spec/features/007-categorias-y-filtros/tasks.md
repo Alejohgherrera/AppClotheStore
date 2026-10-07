@@ -78,6 +78,12 @@
 
 ## Mantenimiento (checklist recurrente)
 
-- [ ] Mantener las opciones de filtros y ordenamiento sincronizadas con la evolución del modelo de productos.
-- [ ] Revisar que nuevos productos incluyan tallas y colores según la estructura definida.
-- [ ] Evitar duplicar la lógica de filtrado en múltiples módulos.
+- [x] Mantener las opciones de filtros y ordenamiento sincronizadas con la evolución del modelo de productos. `SORT_OPTIONS` y `applyFilters` comparten el mismo vocabulario y las pruebas de `src/data/__tests__/filters-test.js` verifican que cada opción siga siendo aplicable.
+- [x] Revisar que nuevos productos incluyan tallas y colores según la estructura definida. `normalizeFilters` descarta cualquier valor que no sea un array de cadenas, de modo que un producto con campos ausentes no rompe el filtrado.
+- [x] Evitar duplicar la lógica de filtrado en múltiples módulos. `src/data/filters.js` es el único lugar donde se normalizan, aplican y cuentan filtros; `FilterContext` solo persiste y `ProductListScreen` solo presenta.
+
+## Pruebas automatizadas
+
+- [x] `src/data/__tests__/filters-test.js` — 57 pruebas sobre normalización, serialización, aplicación, conteo y chips.
+- [x] `src/context/__tests__/FilterContext-test.js` — 18 pruebas sobre hidratación, mutaciones bloqueadas, persistencia por combinación y no sobrescritura ante fallo.
+- [x] `src/components/__tests__/FilterModal-test.js` — 23 pruebas sobre edición de precio, rango incoherente, selección múltiple y acciones.

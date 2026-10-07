@@ -154,3 +154,14 @@ La estructura almacenada es un mapa indexado por la combinación de género y ca
 - [ ] La UI utiliza los tokens de `src/theme/`.
 - [ ] La aplicación inicia correctamente después de la implementación.
 - [ ] No se introducen dependencias externas innecesarias.
+
+## Cobertura de pruebas
+
+| Criterio | Suite |
+| --- | --- |
+| Filtro de precio, tallas, colores y disponibilidad | `src/data/__tests__/filters-test.js` |
+| Combinación de filtros y ordenamiento | `src/data/__tests__/filters-test.js` |
+| Chips de filtros activos | `src/data/__tests__/filters-test.js` |
+| Modal de filtros y rango incoherente | `src/components/__tests__/FilterModal-test.js` |
+| Persistencia por combinación y valores por defecto | `src/context/__tests__/FilterContext-test.js` |
+| Tallas y colores centralizados | `src/data/sizes.js`, `src/data/colors.js` (datos, sin lógica) |

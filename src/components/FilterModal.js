@@ -20,6 +20,7 @@ function PriceInput({ label, value, onChangeText }) {
     <View style={styles.priceInputGroup}>
       <Text style={styles.inputLabel}>{label}</Text>
       <TextInput
+        accessibilityLabel={`Precio ${label}`}
         style={styles.priceInput}
         value={value === Infinity || value === null || value === undefined ? '' : String(value)}
         onChangeText={(text) => {
@@ -37,6 +38,9 @@ function PriceInput({ label, value, onChangeText }) {
 function MultiSelectChip({ label, selected, onPress, leading }) {
   return (
     <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
       onPress={onPress}
       style={[styles.chip, selected && styles.chipSelected]}
     >
@@ -98,12 +102,22 @@ export default function FilterModal({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <Pressable style={styles.backdrop} onPress={onClose} />
+      <Pressable
+      accessibilityLabel="Cerrar filtros tocando el fondo"
+      accessibilityRole="button"
+      style={styles.backdrop}
+      onPress={onClose}
+    />
       <SafeAreaView edges={['bottom']} style={styles.sheet}>
         <View style={styles.handle} />
         <View style={styles.header}>
           <Text style={styles.title}>Filtros</Text>
-          <Pressable onPress={onClose} hitSlop={8}>
+          <Pressable
+            accessibilityLabel="Cerrar filtros"
+            accessibilityRole="button"
+            onPress={onClose}
+            hitSlop={8}
+          >
             <Text style={styles.close}>✕</Text>
           </Pressable>
         </View>
@@ -184,6 +198,7 @@ export default function FilterModal({
             <View style={styles.switchRow}>
               <Text style={styles.sectionTitle}>Solo disponibles</Text>
               <Switch
+                accessibilityLabel="Solo disponibles"
                 value={localFilters.soloDisponibles}
                 onValueChange={(v) =>
                   setLocalFilters((p) => ({ ...p, soloDisponibles: v }))
@@ -197,12 +212,19 @@ export default function FilterModal({
 
         <View style={styles.footer}>
           <Pressable
+            accessibilityLabel="Limpiar filtros"
+            accessibilityRole="button"
             style={[styles.footerButton, styles.clearButton]}
             onPress={handleClear}
           >
             <Text style={styles.clearText}>Limpiar</Text>
           </Pressable>
           <Pressable
+            accessibilityLabel="Aplicar filtros"
+            accessibilityRole="button"
+            accessibilityState={{
+              disabled: localFilters.precioMin > localFilters.precioMax,
+            }}
             disabled={localFilters.precioMin > localFilters.precioMax}
             style={[
               styles.footerButton,

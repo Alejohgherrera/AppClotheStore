@@ -2,8 +2,11 @@ import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/asy
 
 jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
 
-jest.spyOn(console, 'warn').mockImplementation(() => {});
-jest.spyOn(console, 'error').mockImplementation(() => {});
+// Las pruebas provocan fallos de AsyncStorage a proposito, y React avisa de
+// act() en algunos ciclos. Se silencian por asignacion directa y no con
+// jest.spyOn, para que jest.restoreAllMocks() no los restaure.
+console.warn = () => {};
+console.error = () => {};
 
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');

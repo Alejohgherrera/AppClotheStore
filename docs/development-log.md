@@ -450,8 +450,8 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 | 2026-08-26 | Búsqueda: combinación con filtros y ordenamiento | Aprobado | 008 |
 | 2026-08-26 | Búsqueda: chip activo, limpiar y estado vacío diferenciado | Aprobado | 008 |
 | 2026-08-26 | `expo-doctor` (18 comprobaciones) | Aprobado | 008 |
-| 2026-10-07 | `npm test` (3 suites, 45 pruebas) | Aprobado: 45/45 | 009 |
-| 2026-10-07 | `npm run lint` | Aprobado: 0 problemas | 009 |
+| 2026-10-07 | `npm test` (6 suites, 143 pruebas) | Aprobado: 143/143 | 007/008/009 |
+| 2026-10-07 | `npm run lint` | Aprobado: 0 problemas | 007/008/009 |
 | 2026-10-07 | Bundle Metro vía `npx expo export --platform all` | Aprobado: bundles iOS y Android, 0 errores | 009 |
 | 2026-10-07 | `expo-doctor` (18 comprobaciones) | Aprobado: 18/18 | 009 |
 | 2026-10-07 | Validación visual Expo Go Android e iOS: catálogo → detalle → carrito | Aprobado (usuario) | 009 |
@@ -682,6 +682,8 @@ spec/features/009-detalle-de-producto/spec.md  (estado y criterios)
 
 ### Pruebas escritas
 
+> La cobertura de filtros, contexto de filtros y modal de filtros se añadió después y se documenta en la entrada de las Features 007 y 008.
+
 - `ProductDetailScreen` (17): presentación de nombre, categoría, precio y descripción; todas las imágenes del array y placeholder sin imágenes; superficie desplazable; estados seleccionados de talla y color; feedback por falta de talla y por falta de color; limpieza del feedback por temporizador; CTA deshabilitada y sin confirmación en producto agotado; confirmación tras alta válida y su retirada por temporizador; rechazo de un producto ausente del catálogo; roles, región viva y navegación de vuelta.
 - `CartContext` (16): `buildCartKey` y su normalización; `normalizeCartItems` contra entradas inválidas, productos agotados, inexistentes, variantes no contempladas, cantidades no positivas o no enteras, color como objeto, color único implícito, fusión de líneas repetidas y separación de combinaciones distintas.
 - `CartScreen` (12): indicador de carga mientras AsyncStorage no responde; restauración de líneas válidas; descarte de agotados; no sobrescritura del almacenamiento ante fallo de lectura ni ante JSON corrupto; talla, color, cantidad y totales; aumento de cantidad; disminución deshabilitada en cantidad uno; eliminación explícita; checkout deshabilitado; navegación a catálogo desde el carrito vacío.
@@ -706,7 +708,7 @@ spec/features/009-detalle-de-producto/spec.md  (estado y criterios)
 
 ### Validaciones
 
-1. `npm test`: 3 suites, 45 pruebas, todas aprobadas.
+1. `npm test`: 3 suites, 45 pruebas, todas aprobadas. Ampliado posteriormente a 6 suites y 143 pruebas con la cobertura de las Features 007 y 008.
 2. `npm run lint`: 0 problemas.
 3. `npx expo export --platform all`: bundles iOS y Android generados, 0 errores.
 4. `npx expo-doctor`: 18/18 comprobaciones aprobadas; dependencias alineadas con SDK 54.
@@ -716,6 +718,51 @@ spec/features/009-detalle-de-producto/spec.md  (estado y criterios)
 ### Resultado
 
 Feature 009 completada: los 14 criterios de aceptación de `spec.md` están cumplidos y verificados mediante pruebas automatizadas, compilación y validación visual en ambos dispositivos. Movida a "Hecho" en `roadmap.md`.
+
+---
+
+## 2026-10-07 — Features 007 y 008 · Cobertura de pruebas de filtros y búsqueda
+
+### Actividad
+
+La revisión de los cambios pendientes de las Features 007 y 008 detectó que ambas estaban marcadas como completadas sin pruebas que respaldaran sus criterios. Se escribió la cobertura de la lógica de filtros, su persistencia y el modal de filtros.
+
+### Pruebas escritas
+
+- `src/data/__tests__/filters-test.js` — 57 pruebas sobre `normalizeText`, `getPriceRange`, `normalizeFilters`, `serializeFilters`, `normalizeStoredFilterMap`, `serializeFilterMap`, `applyFilters`, `countActiveFilters`, `isPriceFilterActive` y `getActiveFilterChips`. Cubren el ciclo completo serializar → normalizar → aplicar, los tres ordenamientos, la insensibilidad a acentos y el rechazo de entradas inválidas.
+- `src/context/__tests__/FilterContext-test.js` — 18 pruebas sobre hidratación, bloqueo de mutaciones antes de hidratar, independencia por combinación, normalización de datos antiguos, no sobrescritura del almacenamiento ante fallo de lectura o JSON inválido, y error explícito al usar el hook fuera del provider.
+- `src/components/__tests__/FilterModal-test.js` — 23 pruebas sobre edición de precio con `Infinity`, rango incoherente, selección múltiple de tallas y colores, y las tres acciones del modal.
+
+### Accesibilidad añadida a `FilterModal`
+
+Las pruebas exigían consultar los controles por etiqueta, lo que reveló que el modal no las tenía. Se añadieron `accessibilityLabel` y `accessibilityRole` a la equis, el fondo, los chips de talla y color, los campos de precio, el interruptor de disponibilidad y los botones Limpiar y Aplicar. El botón Aplicar también expone `accessibilityState.disabled` cuando el rango es incoherente.
+
+### Cambios en la infraestructura de pruebas
+
+`jest.setup.js` silenciaba `console.warn` y `console.error` con `jest.spyOn`, pero `jest.restoreAllMocks()` en el `beforeEach` de las nuevas suites los restauraba y las pruebas de fallo de lectura empezaban a emitir avisos. Se cambió a asignación directa (`console.warn = () => {}`), que no es restaurable.
+
+### Hallazgos de la revisión de código
+
+Una revisión previa del diff-aplazado señaló dos posibles defectos en `src/data/filters.js`:
+
+- **Falso positivo.** Se Abijo que el chip de precio podía quedar activo de forma permanente tras recargar. Se verificó ejecutando el ciclo `serializeFilters` → `normalizeFilters` → `getActiveFilterChips` y el chip se comporta correctamente en todos los casos.
+- **Comportamiento confirmado.** El borrado de la búsqueda al cambiar de categoría no era un defecto sino una mejora deliberada: los filtros ahora persisten por combinación de género y categoría. Los specs de 007 y 008 ya lo reflejaban.
+
+Tres expectativas de las pruebas resultaron incorrectas durante la redacción y se corrigieron, no el código: el rango de precio solo se cuenta como filtro activo cuando un límite restringe el catálogo, el chip de precio no aparece cuando solo el mínimo coincide con el rango, y `setFiltersFor` reemplaza la combinación completa en lugar de fusionarla.
+
+### Documentación actualizada
+
+- `spec/features/007-categorias-y-filtros/tasks.md`: las tres tareas de mantenimiento recurrente se marcaron como cumplidas con su justificación, y se añadió el apartado de pruebas.
+- `spec/features/007-categorias-y-filtros/spec.md`: tabla de cobertura que relaciona cada criterio de aceptación con la suite que lo verifica.
+
+### Validaciones
+
+1. `npm test`: 6 suites, 143 pruebas, todas aprobadas y sin avisos de consola.
+2. `npm run lint`: 0 problemas.
+
+### Resultado
+
+Las Features 007 y 008 quedan respaldadas por pruebas automatizadas. 98 de 143 pruebas cubren la lógica de filtros y su persistencia.
 
 ---
 
