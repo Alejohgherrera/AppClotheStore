@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import CartScreen from '../CartScreen';
 import { CartProvider } from '../../context/CartContext';
@@ -162,6 +163,69 @@ describe('CartScreen', () => {
 
       const checkout = screen.getByLabelText('Finalizar compra, próximamente');
       expect(checkout.props.accessibilityState.disabled).toBe(true);
+    });
+  });
+
+  describe('vaciado del carrito', () => {
+    it('pide confirmación antes de vaciar', async () => {
+      const alert = jest.spyOn(Alert, 'alert');
+      await persistir([lineaValida(2)]);
+      await montarCarrito();
+      await waitFor(() => expect(screen.getByText(productoReal.nombre)).toBeTruthy());
+
+      await fireEvent.press(screen.getByLabelText('Vaciar carrito'));
+
+      expect(alert).toHaveBeenCalledWith(
+        'Vaciar carrito',
+        '¿Quieres eliminar todos los productos del carrito?',
+        expect.any(Array),
+      );
+    });
+
+    it('no vacía si el usuario cancela', async () => {
+      const alert = jest.spyOn(Alert, 'alert');
+      await persistir([lineaValida(2)]);
+      await montarCarrito();
+      await waitFor(() => expect(screen.getByText(productoReal.nombre)).toBeTruthy());
+
+      await fireEvent.press(screen.getByLabelText('Vaciar carrito'));
+      const botones = alert.mock.calls[0][2];
+      await fireEvent.press(botones.find((boton) => boton.text === 'Cancelar'));
+
+      expect(screen.getByText(productoReal.nombre)).toBeTruthy();
+      expect(screen.getByLabelText('Cantidad: 2')).toBeTruthy();
+    });
+
+    it('vacía las líneas al confirmar', async () => {
+      const alert = jest.spyOn(Alert, 'alert');
+      await persistir([lineaValida(2)]);
+      await montarCarrito();
+      await waitFor(() => expect(screen.getByText(productoReal.nombre)).toBeTruthy());
+
+      await fireEvent.press(screen.getByLabelText('Vaciar carrito'));
+      const botones = alert.mock.calls[0][2];
+      await act(async () => {
+        botones.find((boton) => boton.text === 'Vaciar').onPress();
+      });
+
+      await waitFor(() => expect(screen.getByText('Carrito vacío')).toBeTruthy());
+    });
+
+    it('persiste el carrito vacío tras vaciarlo', async () => {
+      const alert = jest.spyOn(Alert, 'alert');
+      await persistir([lineaValida(2)]);
+      await montarCarrito();
+      await waitFor(() => expect(screen.getByText(productoReal.nombre)).toBeTruthy());
+
+      await fireEvent.press(screen.getByLabelText('Vaciar carrito'));
+      const botones = alert.mock.calls[0][2];
+      await act(async () => {
+        botones.find((boton) => boton.text === 'Vaciar').onPress();
+      });
+
+      await waitFor(async () => {
+        expect(JSON.parse(await AsyncStorage.getItem(STORAGE_KEY))).toEqual([]);
+      });
     });
   });
 

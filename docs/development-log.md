@@ -450,8 +450,9 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 | 2026-08-26 | Búsqueda: combinación con filtros y ordenamiento | Aprobado | 008 |
 | 2026-08-26 | Búsqueda: chip activo, limpiar y estado vacío diferenciado | Aprobado | 008 |
 | 2026-08-26 | `expo-doctor` (18 comprobaciones) | Aprobado | 008 |
-| 2026-10-07 | `npm test` (6 suites, 143 pruebas) | Aprobado: 143/143 | 007/008/009 |
-| 2026-10-07 | `npm run lint` | Aprobado: 0 problemas | 007/008/009 |
+| 2026-10-07 | `npm test` (8 suites, 189 pruebas) | Aprobado: 189/189 | 007/008/009/016 |
+| 2026-10-07 | `npm run lint` | Aprobado: 0 errores, 0 avisos | 007/008/009/016 |
+| 2026-10-07 | Bundle Metro vía `npx expo export --platform all` tras la cobertura de 016 | Aprobado: bundles iOS y Android, 0 errores | 016 |
 | 2026-10-07 | Bundle Metro vía `npx expo export --platform all` | Aprobado: bundles iOS y Android, 0 errores | 009 |
 | 2026-10-07 | `expo-doctor` (18 comprobaciones) | Aprobado: 18/18 | 009 |
 | 2026-10-07 | Validación visual Expo Go Android e iOS: catálogo → detalle → carrito | Aprobado (usuario) | 009 |
@@ -763,6 +764,43 @@ Tres expectativas de las pruebas resultaron incorrectas durante la redacción y 
 ### Resultado
 
 Las Features 007 y 008 quedan respaldadas por pruebas automatizadas. 98 de 143 pruebas cubren la lógica de filtros y su persistencia.
+
+---
+
+## 2026-10-07 — Feature 016 · Carrito — Cobertura de pruebas de la remediación
+
+### Actividad
+
+El carrito ya estaba remediado en el working tree, pero sus pruebas cubrían solo las funciones puras de `CartContext` y la presentación de `CartScreen`. Las reglas de negocio que el `plan.md` considera el núcleo de la feature no tenían cobertura. Se escribieron 46 pruebas nuevas sobre el provider real, el botón de cabecera y el vaciado con confirmación.
+
+### Pruebas escritas
+
+- `src/context/__tests__/CartProvider-test.js` — 32 pruebas sobre el provider real montado con `renderHook` y AsyncStorage mockeado. Cubren el bloqueo de `addItem`, `removeItem`, `updateQuantity` y `clearCart` antes de hidratar; la resolución del producto canónico a partir de una copia con precio obsoleto; la fusión de la misma combinación y la separación de combinaciones distintas; el rechazo de productos inexistentes, agotados, con talla o color no contemplados y con cantidades cero, negativas, decimales, `NaN` o infinitas; la resolución del color implícito cuando el producto tiene uno solo; el tratamiento del cero como eliminación de línea; el rechazo de identificadores no textuales; y el recálculo de `count` y `total` tras cada mutación y desde líneas parcialmente inválidas.
+- `src/navigation/__tests__/AppNavigator-test.js` — 10 pruebas sobre el botón de cabecera: rol, etiqueta con singular y plural según el número de artículos, `hitSlop`, presencia y ausencia del badge, navegación a `Cart` con carrito vacío y con líneas, ausencia del botón en la propia pantalla del carrito y persistencia del botón tras navegar al catálogo.
+- `src/screens/__tests__/CartScreen-test.js` — 4 pruebas nuevas sobre el vaciado: confirmación mediante `Alert`, cancelación sin efectos, vaciado efectivo y persistencia del carrito vacío en AsyncStorage.
+
+### Problemas encontrados y soluciones
+
+1. **`renderHook` es asíncrono en la versión 14 de React Native Testing Library.** La primera versión guardaba el resultado del hook dentro del `act`, por lo que la referencia se perdía al cambiar de render y todas las pruebas fallaban con `Cannot read properties of undefined`. Solución: esperar `renderHook` y capturar `result` antes de los `act` posteriores.
+2. **`Alert` requiere espiar el módulo para poder pulsar sus botones.** Solución: `jest.spyOn(Alert, 'alert')` y llamada directa al `onPress` del botón confirmado dentro de un `act`.
+3. **`AppNavigator` requiere `SafeAreaProvider`.** Solución: envolver el árbol de prueba con el provider real, ya mockeado en `jest.setup.js`.
+4. **El texto del botón de inicio es "Explorar", no "Explorar catálogo".** La expectativa se ajustó al texto real de `HomeScreen`.
+5. **Import duplicado en la suite nueva.** `CartProvider` y `useCart` se importaban en una línea y `CART_ACTION_ERRORS` en otra; ESLint lo detectó como `import/no-duplicates` y se unificó.
+
+### Expectativa corregida
+
+La primera versión de la prueba de descarte de líneas inválidas asumía que el almacenamiento conservaba la línea de un producto agotado. El comportamiento real es el contrario: el normalizador la purga y el almacenamiento acaba con un array vacío. Se corrigió la prueba para documentar ese comportamiento, que es el correcto, ya que una línea de producto agotado no debe sobrevivir a la siguiente sesión. La distinción relevante es entre lectura fallida, que no sobrescribe nada, y lectura correcta con datos inválidos, que sí purga.
+
+### Validaciones
+
+1. `npm test`: 8 suites, 189 pruebas, todas aprobadas.
+2. `npm run lint`: 0 errores y 0 avisos.
+3. `npx expo export --platform all`: bundles iOS y Android generados, 0 errores.
+
+### Pendiente
+
+- Validación visual del flujo de carrito en Android e iOS por parte del usuario: abrir desde el header, modificar cantidades, eliminar una línea, vaciar con confirmación y comprobar que la badge se actualiza.
+- Mover la Feature 016 a "Hecho" en el roadmap una vez completada esa validación.
 
 ---
 
