@@ -40,13 +40,13 @@ El proyecto se desarrollará progresivamente.
 * [x] Categorías.
 * [x] Búsqueda.
 * [x] Filtros.
-* [ ] Detalle de producto.
+* [x] Detalle de producto.
 * [ ] Tallas y variantes.
 * [ ] Gestión de stock.
 
 ### 🛒 Experiencia de compra
 
-* [ ] Carrito.
+* [ ] Carrito — prototipo local en remediación.
 * [ ] Favoritos.
 * [ ] Gestión de cantidades.
 * [ ] Resumen de compra.
@@ -85,8 +85,8 @@ Actualmente el proyecto utiliza:
 | JavaScript        | Lenguaje principal                          |
 | React Native      | Desarrollo de la aplicación móvil           |
 | Expo              | Plataforma y herramientas de desarrollo     |
-| React Navigation  | Navegación prevista                         |
-| React Context API | Gestión de estado prevista                  |
+| React Navigation  | Navegación implementada                     |
+| React Context API | Gestión de estado para filtros y carrito   |
 | Git               | Control de versiones                        |
 | GitHub            | Repositorio remoto                          |
 | MCP               | Herramientas de desarrollo para el proyecto |
@@ -100,8 +100,9 @@ Todavía no se han seleccionado:
 * Base de datos.
 * Sistema de autenticación.
 * Plataforma de pagos.
-* Framework de testing.
 * Infraestructura de producción.
+
+> Testing ya está definido: Jest con el preset `jest-expo` y `@testing-library/react-native`. Configuración en `jest.config.js`, `jest.setup.js` y `eslint.config.js`.
 
 Estas decisiones se tomarán cuando lleguemos a las features correspondientes.
 
@@ -257,6 +258,13 @@ npx expo start --android
 
 También puedes utilizar **Expo Go** para probar la aplicación durante el desarrollo.
 
+Para ejecutar las pruebas y el linter:
+
+```bash
+npm test
+npm run lint
+```
+
 ---
 
 ## 📋 Estado actual
@@ -275,7 +283,7 @@ La aplicación se encuentra en una etapa de desarrollo con las siguientes caract
 * Repositorio Git.
 * Repositorio remoto en GitHub.
 * Navegación inicial con React Navigation.
-* Modelo de productos con tallas, colores y variantes.
+* Modelo local de productos con tallas, colores y disponibilidad.
 * Catálogo con navegación por género → categoría → lista de productos.
 * Filtros avanzados (precio, tallas, colores, disponibilidad, ordenamiento).
 * Búsqueda en tiempo real con normalización de texto (insensible a mayúsculas y acentos).

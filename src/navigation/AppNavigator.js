@@ -1,4 +1,4 @@
-import { DarkTheme, NavigationContainer } from '@react-navigation/native';
+import { DarkTheme, NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors, typography } from '../theme';
 import { useCart } from '../context/CartContext';
@@ -36,27 +36,38 @@ const screenOptions = {
   contentStyle: { backgroundColor: colors.background },
 };
 
-function CartIcon() {
+function CartHeaderButton() {
   const { count } = useCart();
+  const navigation = useNavigation();
+  const itemLabel = count === 1 ? 'artículo' : 'artículos';
+
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-      <Text style={{ fontSize: 20, color: colors.textPrimary }}>🛒</Text>
-      {count > 0 && (
-        <View style={{
-          backgroundColor: colors.accent,
-          borderRadius: 10,
-          minWidth: 20,
-          height: 20,
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingHorizontal: 4,
-        }}>
-          <Text style={{ fontSize: 11, color: colors.onAccent, fontWeight: '700' }}>
-            {count}
-          </Text>
-        </View>
-      )}
-    </View>
+    <Pressable
+      accessibilityLabel={`Abrir carrito, ${count} ${itemLabel}`}
+      accessibilityRole="button"
+      hitSlop={8}
+      onPress={() => navigation.navigate('Cart')}
+      style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Text style={{ fontSize: 20, color: colors.textPrimary }}>🛒</Text>
+        {count > 0 && (
+          <View style={{
+            backgroundColor: colors.accent,
+            borderRadius: 10,
+            minWidth: 20,
+            height: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 4,
+          }}>
+            <Text style={{ fontSize: 11, color: colors.onAccent, fontWeight: '700' }}>
+              {count}
+            </Text>
+          </View>
+        )}
+      </View>
+    </Pressable>
   );
 }
 
@@ -70,19 +81,19 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: 'ClotheStore', headerRight: () => <CartIcon /> }}
+          options={{ title: 'ClotheStore', headerRight: () => <CartHeaderButton /> }}
         />
         <Stack.Screen
           name="Catalog"
           component={GenderSelectScreen}
-          options={{ title: 'Catálogo', headerRight: () => <CartIcon /> }}
+          options={{ title: 'Catálogo', headerRight: () => <CartHeaderButton /> }}
         />
         <Stack.Screen
           name="Categories"
           component={CategoriesScreen}
           options={({ route }) => ({
             title: route.params.genero.nombre,
-            headerRight: () => <CartIcon />,
+            headerRight: () => <CartHeaderButton />,
           })}
         />
         <Stack.Screen
@@ -90,7 +101,7 @@ export default function AppNavigator() {
           component={ProductListScreen}
           options={({ route }) => ({
             title: route.params.categoria.nombre,
-            headerRight: () => <CartIcon />,
+            headerRight: () => <CartHeaderButton />,
           })}
         />
         <Stack.Screen
@@ -99,12 +110,13 @@ export default function AppNavigator() {
           options={({ route }) => ({
             title: route.params.producto.nombre,
             headerBackTitle: 'Atrás',
+            headerRight: () => <CartHeaderButton />,
           })}
         />
         <Stack.Screen
           name="Cart"
           component={CartScreen}
-          options={{ title: 'Carrito', headerRight: () => <CartIcon /> }}
+          options={{ title: 'Carrito' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

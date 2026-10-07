@@ -1,42 +1,88 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { formatPrice } from '../data/products';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
 
 export default function CartScreen({ navigation }) {
-  const { items, total, count, updateQuantity, removeItem } = useCart();
+  const { items, total, count, hydrated, updateQuantity, removeItem, clearCart } = useCart();
+
+  const handleClearCart = () => {
+    Alert.alert(
+      'Vaciar carrito',
+      '¿Quieres eliminar todos los productos del carrito?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Vaciar', style: 'destructive', onPress: clearCart },
+      ],
+    );
+  };
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
       <ProductCard producto={item.producto} />
       <View style={styles.info}>
-        <Text style={styles.detail}>{item.talla}</Text>
-        {item.color && (
-          <Text style={styles.detail}>{item.color}</Text>
-        )}
+        <Text style={styles.detail}>Talla: {item.talla || 'Única'}</Text>
+        {item.color && <Text style={styles.detail}>Color: {item.color}</Text>}
         <Text style={styles.price}>{formatPrice(item.producto.precio * item.cantidad)}</Text>
       </View>
       <View style={styles.actions}>
         <Pressable
-          style={[styles.quantityButton, item.cantidad <= 1 && styles.quantityButtonDisabled]}
+          accessibilityLabel={`Disminuir cantidad de ${item.producto.nombre}`}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: item.cantidad <= 1 }}
+          disabled={item.cantidad <= 1}
+          style={({ pressed }) => [
+            styles.quantityButton,
+            item.cantidad <= 1 && styles.quantityButtonDisabled,
+            pressed && styles.quantityButtonPressed,
+          ]}
           onPress={() => updateQuantity(item.id, item.cantidad - 1)}
         >
           <Text style={styles.quantityText}>−</Text>
         </Pressable>
-        <Text style={styles.quantity}>{item.cantidad}</Text>
+        <Text accessibilityLabel={`Cantidad: ${item.cantidad}`} style={styles.quantity}>
+          {item.cantidad}
+        </Text>
         <Pressable
-          style={styles.quantityButton}
+          accessibilityLabel={`Aumentar cantidad de ${item.producto.nombre}`}
+          accessibilityRole="button"
+          style={({ pressed }) => [
+            styles.quantityButton,
+            pressed && styles.quantityButtonPressed,
+          ]}
           onPress={() => updateQuantity(item.id, item.cantidad + 1)}
         >
           <Text style={styles.quantityText}>+</Text>
         </Pressable>
-        <Pressable style={styles.removeButton} onPress={() => removeItem(item.id)}>
+        <Pressable
+          accessibilityLabel={`Eliminar ${item.producto.nombre} del carrito`}
+          accessibilityRole="button"
+          style={styles.removeButton}
+          onPress={() => removeItem(item.id)}
+        >
           <Text style={styles.removeText}>Eliminar</Text>
         </Pressable>
       </View>
     </View>
   );
+
+  if (!hydrated) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator color={colors.accent} size="large" />
+        <Text style={styles.loadingText}>Cargando carrito…</Text>
+      </View>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -45,9 +91,19 @@ export default function CartScreen({ navigation }) {
         <Text style={styles.emptyMessage}>
           Agrega productos para comenzar tu compra.
         </Text>
+        <Pressable
+          accessibilityLabel="Explorar catálogo"
+          accessibilityRole="button"
+          style={styles.catalogButton}
+          onPress={() => navigation.navigate('Catalog')}
+        >
+          <Text style={styles.catalogButtonText}>Explorar catálogo</Text>
+        </Pressable>
       </View>
     );
   }
+
+  const itemLabel = count === 1 ? 'artículo' : 'artículos';
 
   return (
     <View style={styles.container}>
@@ -60,11 +116,25 @@ export default function CartScreen({ navigation }) {
       />
       <View style={styles.footer}>
         <View style={styles.summary}>
-          <Text style={styles.summaryLabel}>Total ({count} artículos)</Text>
+          <Text style={styles.summaryLabel}>Total ({count} {itemLabel})</Text>
           <Text style={styles.summaryValue}>{formatPrice(total)}</Text>
         </View>
-        <Pressable style={styles.checkoutButton}>
-          <Text style={styles.checkoutText}>Finalizar compra</Text>
+        <Pressable
+          accessibilityLabel="Finalizar compra, próximamente"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: true }}
+          disabled
+          style={styles.checkoutButton}
+        >
+          <Text style={styles.checkoutText}>Checkout próximamente</Text>
+        </Pressable>
+        <Pressable
+          accessibilityLabel="Vaciar carrito"
+          accessibilityRole="button"
+          style={styles.clearButton}
+          onPress={handleClearCart}
+        >
+          <Text style={styles.clearText}>Vaciar carrito</Text>
         </Pressable>
       </View>
     </View>
@@ -112,10 +182,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.sm,
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  quantityButtonPressed: {
+    backgroundColor: colors.interactive.pressed,
   },
   quantityButtonDisabled: {
     opacity: 0.4,
@@ -134,6 +207,8 @@ const styles = StyleSheet.create({
   },
   removeButton: {
     marginLeft: 'auto',
+    minHeight: 44,
+    justifyContent: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radius.sm,
@@ -167,7 +242,8 @@ const styles = StyleSheet.create({
     color: colors.accent,
   },
   checkoutButton: {
-    backgroundColor: colors.accent,
+    minHeight: 48,
+    backgroundColor: colors.interactive.disabled,
     borderRadius: radius.md,
     paddingVertical: spacing.md - 2,
     alignItems: 'center',
@@ -175,15 +251,38 @@ const styles = StyleSheet.create({
   },
   checkoutText: {
     ...typography.body,
-    color: colors.onAccent,
+    color: colors.textSecondary,
     fontWeight: '700',
+  },
+  clearButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.sm,
+  },
+  clearText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  loadingText: {
+    ...typography.body,
+    color: colors.textSecondary,
   },
   emptyContainer: {
     flex: 1,
     backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
+    gap: spacing.sm,
     padding: spacing.lg,
   },
   emptyTitle: {
@@ -196,5 +295,18 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  catalogButton: {
+    minHeight: 44,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    justifyContent: 'center',
+    borderRadius: radius.md,
+    backgroundColor: colors.accent,
+  },
+  catalogButtonText: {
+    ...typography.body,
+    color: colors.onAccent,
+    fontWeight: '700',
   },
 });

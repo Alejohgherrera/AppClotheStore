@@ -1,115 +1,231 @@
-import { useState } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, spacing, typography } from '../theme';
 import { formatPrice } from '../data/products';
-import { useCart } from '../context/CartContext';
+import { CART_ACTION_ERRORS, useCart } from '../context/CartContext';
+
+const feedbackMessages = {
+  [CART_ACTION_ERRORS.NOT_HYDRATED]: 'El carrito se está cargando. Inténtalo de nuevo.',
+  [CART_ACTION_ERRORS.PRODUCT_UNAVAILABLE]: 'Este producto no está disponible.',
+  [CART_ACTION_ERRORS.INVALID_VARIANT]: 'Selecciona una talla y un color válidos.',
+  [CART_ACTION_ERRORS.INVALID_QUANTITY]: 'La cantidad no es válida.',
+};
 
 export default function ProductDetailScreen({ route, navigation }) {
-  const { producto, genero, categoria } = route.params;
-  const { imagenes, nombre, precio, descripcion, tallas, colores, disponible } = producto;
-
+  const { producto, categoria } = route.params;
+  const {
+    imagenes,
+    nombre,
+    precio,
+    descripcion,
+    tallas = [],
+    colores = [],
+    disponible,
+  } = producto;
+  const productImages = Array.isArray(imagenes) && imagenes.length > 0 ? imagenes : [];
   const [selectedSize, setSelectedSize] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(colores[0] || null);
-  const [added, setAdded] = useState(false);
-  const { addItem } = useCart();
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+  const feedbackTimer = useRef(null);
+  const { addItem, hydrated } = useCart();
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    };
+  }, []);
+
+  const showFeedback = (message, type = 'error') => {
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    setFeedback({ message, type });
+    feedbackTimer.current = setTimeout(() => setFeedback(null), 2500);
+  };
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
-      console.log(' Seleccione una talla');
+    if (!disponible) {
+      showFeedback('Este producto está agotado.');
       return;
     }
-    if (colores.length > 1 && !selectedColor) {
-      console.log(' Seleccione un color');
+    if (!hydrated) {
+      showFeedback(feedbackMessages[CART_ACTION_ERRORS.NOT_HYDRATED]);
+      return;
+    }
+    if (tallas.length > 0 && !selectedSize) {
+      showFeedback('Selecciona una talla.');
+      return;
+    }
+    if (colores.length > 0 && !selectedColor) {
+      showFeedback('Selecciona un color.');
       return;
     }
 
-    addItem(producto, selectedSize, selectedColor?.nombre, 1);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    const result = addItem(
+      producto,
+      selectedSize,
+      selectedColor?.nombre,
+      1,
+    );
+
+    if (!result?.ok) {
+      showFeedback(feedbackMessages[result?.reason] || 'No se pudo agregar el producto.');
+      return;
+    }
+
+    showFeedback('Agregado al carrito.', 'success');
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image source={imagenes[0]} style={styles.image} resizeMode="cover" />
-        {!disponible && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>Agotado</Text>
+    <SafeAreaView edges={['bottom']} style={styles.safeArea}>
+      <ScrollView
+        testID="producto-detalle-scroll"
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.imageContainer}>
+          {productImages.length > 0 ? (
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              accessibilityLabel={`Imágenes de ${nombre}`}
+            >
+              {productImages.map((image, index) => (
+                <Image
+                  key={`${nombre}-${index}`}
+                  source={image}
+                  style={styles.image}
+                  resizeMode="cover"
+                  accessibilityLabel={`Imagen ${index + 1} de ${nombre}`}
+                />
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.imagePlaceholderText}>Sin imagen disponible</Text>
+            </View>
+          )}
+          {!disponible && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>Agotado</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.info}>
+          <Text style={styles.category}>{categoria}</Text>
+          <Text style={styles.name}>{nombre}</Text>
+          <Text style={styles.price}>{formatPrice(precio)}</Text>
+          {descripcion && <Text style={styles.description}>{descripcion}</Text>}
+        </View>
+
+        {tallas.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Talla</Text>
+            <View style={styles.chipGroup}>
+              {tallas.map((talla) => (
+                <Pressable
+                  key={talla}
+                  accessibilityLabel={`Seleccionar talla ${talla}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: selectedSize === talla }}
+                  style={[styles.chip, selectedSize === talla && styles.chipSelected]}
+                  onPress={() => setSelectedSize(talla)}
+                >
+                  <Text style={[styles.chipText, selectedSize === talla && styles.chipTextSelected]}>
+                    {talla}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         )}
-      </View>
 
-      <View style={styles.info}>
-        <Text style={styles.category}>{categoria}</Text>
-        <Text style={styles.name}>{nombre}</Text>
-        <Text style={styles.price}>{formatPrice(precio)}</Text>
-        {descripcion && (
-          <Text style={styles.description}>
-            { descripcion}
+        {colores.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Color</Text>
+            <View style={styles.chipGroup}>
+              {colores.map((color) => (
+                <Pressable
+                  key={color.nombre}
+                  accessibilityLabel={`Seleccionar color ${color.nombre}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: selectedColor?.nombre === color.nombre }}
+                  style={[styles.colorChip, selectedColor?.nombre === color.nombre && styles.colorChipSelected]}
+                  onPress={() => setSelectedColor(color)}
+                >
+                  <View style={[styles.colorDot, { backgroundColor: color.codigo }]} />
+                  <Text style={[styles.chipText, selectedColor?.nombre === color.nombre && styles.chipTextSelected]}>
+                    {color.nombre}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
+
+        <Pressable
+          accessibilityLabel={!disponible ? 'Producto agotado' : 'Agregar al carrito'}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !disponible || !hydrated }}
+          disabled={!disponible || !hydrated}
+          style={({ pressed }) => [
+            styles.button,
+            (!disponible || !hydrated) && styles.buttonDisabled,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={handleAddToCart}
+        >
+          <Text style={styles.buttonText}>
+            {!disponible
+              ? 'Producto agotado'
+              : !hydrated
+                ? 'Cargando carrito…'
+                : feedback?.type === 'success'
+                  ? '✓ Agregado'
+                  : 'Agregar al carrito'}
+          </Text>
+        </Pressable>
+
+        {feedback && (
+          <Text
+            accessibilityLiveRegion="polite"
+            style={[styles.feedback, feedback.type === 'success' ? styles.feedbackSuccess : styles.feedbackError]}
+          >
+            {feedback.message}
           </Text>
         )}
-      </View>
 
-      {tallas.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Talla</Text>
-          <View style={styles.chipGroup}>
-            {tallas.map((talla) => (
-              <Pressable
-                key={talla}
-                style={[styles.chip, selectedSize === talla && styles.chipSelected]}
-                onPress={() => setSelectedSize(talla)}
-              >
-                <Text style={[styles.chipText, selectedSize === talla && styles.chipTextSelected]}>
-                  {talla}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+        <View style={styles.footer}>
+          <Pressable
+            accessibilityLabel="Volver al catálogo"
+            accessibilityRole="button"
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.footerText}>Volver al catálogo</Text>
+          </Pressable>
         </View>
-      )}
-
-      {colores.length > 1 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Color</Text>
-          <View style={styles.chipGroup}>
-            {colores.map((color) => (
-              <Pressable
-                key={color.nombre}
-                style={[styles.colorChip, selectedColor?.nombre === color.nombre && styles.colorChipSelected]}
-                onPress={() => setSelectedColor(color)}
-              >
-                <View style={[styles.colorDot, { backgroundColor: color.codigo }]} />
-                <Text style={[styles.chipText, selectedColor?.nombre === color.nombre && styles.chipTextSelected]}>
-                  {color.nombre}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      )}
-
-      <Pressable
-        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-        onPress={handleAddToCart}
-      >
-        <Text style={styles.buttonText}>{added ? '✓ Agregado' : ' agregar al carrito'}</Text>
-      </Pressable>
-
-      <View style={styles.footer}>
-        <Pressable onPress={() => navigation.goBack()}>
-          <Text style={styles.footerText}>Volver al catálogo</Text>
-        </Pressable>
-      </View>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  content: {
     padding: spacing.md,
+    paddingBottom: spacing.xxl,
+    gap: spacing.xs,
   },
   imageContainer: {
     width: '100%',
@@ -124,6 +240,17 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  imagePlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.md,
+  },
+  imagePlaceholderText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
   badge: {
     position: 'absolute',
@@ -182,6 +309,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   chip: {
+    minHeight: 44,
+    justifyContent: 'center',
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
@@ -202,6 +331,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   colorChip: {
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
@@ -224,6 +354,7 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
   },
   button: {
+    minHeight: 48,
     backgroundColor: colors.accent,
     borderRadius: radius.md,
     paddingVertical: spacing.md - 2,
@@ -234,10 +365,24 @@ const styles = StyleSheet.create({
   buttonPressed: {
     backgroundColor: colors.interactive.pressed,
   },
+  buttonDisabled: {
+    backgroundColor: colors.interactive.disabled,
+  },
   buttonText: {
     ...typography.body,
     color: colors.onAccent,
     fontWeight: '700',
+  },
+  feedback: {
+    ...typography.caption,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
+  feedbackSuccess: {
+    color: colors.accent,
+  },
+  feedbackError: {
+    color: colors.textSecondary,
   },
   footer: {
     alignItems: 'center',

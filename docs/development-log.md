@@ -450,6 +450,11 @@ Las validaciones realizadas durante el desarrollo se registrarán aquí.
 | 2026-08-26 | Búsqueda: combinación con filtros y ordenamiento | Aprobado | 008 |
 | 2026-08-26 | Búsqueda: chip activo, limpiar y estado vacío diferenciado | Aprobado | 008 |
 | 2026-08-26 | `expo-doctor` (18 comprobaciones) | Aprobado | 008 |
+| 2026-10-07 | `npm test` (3 suites, 45 pruebas) | Aprobado: 45/45 | 009 |
+| 2026-10-07 | `npm run lint` | Aprobado: 0 problemas | 009 |
+| 2026-10-07 | Bundle Metro vía `npx expo export --platform all` | Aprobado: bundles iOS y Android, 0 errores | 009 |
+| 2026-10-07 | `expo-doctor` (18 comprobaciones) | Aprobado: 18/18 | 009 |
+| 2026-10-07 | Validación visual Expo Go Android e iOS: catálogo → detalle → carrito | Aprobado (usuario) | 009 |
 
 ---
 
@@ -582,6 +587,138 @@ docs/development-log.md
 
 ---
 
+## 2026-09-24 — Formalización de las Features 009 y 016
+
+### Actividad
+
+Se documentó el estado real del detalle de producto y del carrito implementados antes de que existieran sus especificaciones SDD. Se crearon los contratos de las Features 009 y 016 y se abrieron como trabajos de remediación, sin declararlas completadas.
+
+### Estado registrado
+
+- `ProductDetailScreen` y `CartScreen` existen como prototipos funcionales, pero presentan reglas incompletas de disponibilidad, validación, persistencia e interacción.
+- El carrito estaba registrado en navegación, pero su icono de cabecera no era pulsable.
+- Los filtros persistentes podían recuperar `precioMax: null` desde el valor no serializable `Infinity` y vaciar el catálogo.
+- Favoritos y estado global de usuario siguen sin implementarse, aunque algunas listas de estado los habían marcado por error como completados.
+
+### Decisiones
+
+- El detalle de producto mantiene la presentación y las selecciones locales; la lógica de compra pertenece a la Feature 016.
+- El carrito local se remedia antes de continuar con nuevas features, pero mantiene su dependencia futura de variantes, backend e inventario.
+- La persistencia actual debe migrarse de forma compatible y revalidarse contra el catálogo canónico.
+- Las Features 009 y 016 solo pasarán a estado Hecho después de cumplir y validar todos sus criterios.
+
+### Documentación creada
+
+```text
+spec/features/009-detalle-de-producto/spec.md
+spec/features/009-detalle-de-producto/plan.md
+spec/features/009-detalle-de-producto/tasks.md
+spec/features/016-carrito/spec.md
+spec/features/016-carrito/plan.md
+spec/features/016-carrito/tasks.md
+```
+
+### Documentación alineada
+
+```text
+spec/constitution/roadmap.md
+README.md
+AGENTS.md
+```
+
+### Validaciones realizadas
+
+1. Revisión estática del prototipo y del commit `24f4ca2`.
+2. Verificación de las inconsistencias entre código, roadmap, README, AGENTS y bitácora.
+3. Consulta de la documentación oficial de Expo SDK 54 antes de modificar código.
+
+### Resultado
+
+Las Features 009 y 016 quedan en curso. La remediación de navegación, filtros, persistencia, inventario, cantidades y pruebas aún debe implementarse y validarse.
+
+---
+
+## 2026-10-07 — Feature 009 · Detalle de producto — Cierre de la remediación
+
+### Actividad
+
+Se cerró la remediación de la pantalla de detalle de producto. La implementación de la pantalla ya existía en el working tree sin commitear; esta sesión verificó los cinco defectos de `plan.md`, montó la infraestructura de pruebas y lint que el proyecto no tenía, y escribió la cobertura automatizada de los criterios críticos.
+
+### Qué ya estaba implementado y se verificó
+
+`src/screens/ProductDetailScreen.js` ya cubría los defectos catalogados en el `plan.md`:
+
+- Contenido desplazable mediante `ScrollView`.
+- Galería horizontal que consume el array `imagenes` con `pagingEnabled`.
+- Feedback visible para talla y color obligatorios, anunciado con `accessibilityLiveRegion="polite"` y temporizador de 2,5 s con limpieza al desmontar.
+- CTA deshabilitada mediante `!disponible || !hydrated`, con etiqueta y texto diferenciados por estado.
+- Roles, etiquetas y `accessibilityState` en selecciones de talla, color y CTA.
+
+### Infraestructura añadida
+
+El proyecto tenía `jest`, `jest-expo`, `@testing-library/react-native`, `eslint` y `eslint-config-expo` declarados en `devDependencies` pero sin ningún archivo de configuración, por lo que `npm test` y `npm run lint` no existían.
+
+- `jest.config.js` — preset `jest-expo`, `setupFilesAfterEnv` con `jest.setup.js`, `transformIgnorePatterns` según la documentación oficial de Expo SDK 54 (npm), incluyendo `react-navigation`, `react-native-screens`, `react-native-safe-area-context` y `@react-native-async-storage/*`.
+- `jest.setup.js` — mock oficial de AsyncStorage (`@react-native-async-storage/async-storage/jest/async-storage-mock`) y mock de `react-native-safe-area-context` con insets neutros.
+- `eslint.config.js` — `eslint-config-expo/flat` (ESLint 9, flat config), con `no-console` limitado a `warn`/`error` y desactivado en pruebas, más los globales de Jest y Node en los archivos de configuración.
+- `package.json` — scripts `test`, `test:watch`, `test:coverage` y `lint`.
+
+No se añadió ninguna dependencia nueva: `babel-preset-expo` se descartó como `babel.config.js` porque el preset `jest-expo` ya resuelve la configuración de Babel por sí mismo y el paquete no está declarado como dependencia del proyecto.
+
+### Archivos creados / modificados
+
+```text
+jest.config.js                                (nuevo)
+jest.setup.js                                 (nuevo)
+eslint.config.js                              (nuevo)
+package.json                                  (scripts test/test:watch/test:coverage/lint)
+src/screens/ProductDetailScreen.js            (testID del ScrollView)
+src/screens/__tests__/ProductDetailScreen-test.js  (nuevo, 17 pruebas)
+src/screens/__tests__/CartScreen-test.js      (nuevo, 12 pruebas)
+src/context/__tests__/CartContext-test.js     (nuevo, 16 pruebas)
+spec/features/009-detalle-de-producto/tasks.md (checklist real)
+spec/features/009-detalle-de-producto/spec.md  (estado y criterios)
+```
+
+### Pruebas escritas
+
+- `ProductDetailScreen` (17): presentación de nombre, categoría, precio y descripción; todas las imágenes del array y placeholder sin imágenes; superficie desplazable; estados seleccionados de talla y color; feedback por falta de talla y por falta de color; limpieza del feedback por temporizador; CTA deshabilitada y sin confirmación en producto agotado; confirmación tras alta válida y su retirada por temporizador; rechazo de un producto ausente del catálogo; roles, región viva y navegación de vuelta.
+- `CartContext` (16): `buildCartKey` y su normalización; `normalizeCartItems` contra entradas inválidas, productos agotados, inexistentes, variantes no contempladas, cantidades no positivas o no enteras, color como objeto, color único implícito, fusión de líneas repetidas y separación de combinaciones distintas.
+- `CartScreen` (12): indicador de carga mientras AsyncStorage no responde; restauración de líneas válidas; descarte de agotados; no sobrescritura del almacenamiento ante fallo de lectura ni ante JSON corrupto; talla, color, cantidad y totales; aumento de cantidad; disminución deshabilitada en cantidad uno; eliminación explícita; checkout deshabilitado; navegación a catálogo desde el carrito vacío.
+
+### Problemas encontrados y soluciones
+
+1. **`babel.config.js` rompía la resolución del preset.** `jest-expo` resuelve `babel-preset-expo` desde su propia cadena, pero un `babel.config.js` propio hacía que Babel exigiera el preset como dependencia directa del proyecto y fallaba con `Cannot find module 'babel-preset-expo'`. Solución: eliminar `babel.config.js` y delegar la configuración al preset, que ya resuelve `expo/internal/babel-preset`.
+2. **`render` y `fireEvent` son asíncronos en `@testing-library/react-native` v14.** La primera versión de las pruebas los usaba de forma síncrona y fallaba con `render function has not been called`. Solución: esperar cada `render`, `fireEvent` y `act`.
+3. **`act(...)` en `afterEach` al vaciar temporizadores.** `jest.runOnlyPendingTimers()` disparaba `setFeedback` fuera de `act` y generaba avisos de React. Solución: envolver el vaciado en `act`.
+4. **Los productos de prueba inventados eran rechazados por el carrito.** `addItem` resuelve el producto canónico por identificador, así que un objeto ficticio devuelve `INVALID_PRODUCT`. Esto confirmó que la pantalla delega correctamente. Solución: las pruebas usan productos reales de `src/data/products.js`, más una prueba explícita del rechazo por producto inexistente.
+5. **`CartScreen` renderiza `ProductCard`, que usa `useNavigation()`.** Sin `NavigationContainer` la prueba falla con `Couldn't find a navigation object`. Solución: envolver el árbol de prueba en `NavigationContainer`.
+6. **El precio de una línea y el total coinciden como texto.** `getByText` lanzaba `Found multiple elements`. Solución: usar `getAllByText` y afirmar sobre el conjunto.
+
+### Decisiones técnicas
+
+| Fecha      | Decisión                                                        | Motivo                                                                                              | Feature |
+| ---------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------- |
+| 2026-10-07 | Sin `babel.config.js`; configuración delegada a `jest-expo`     | El preset ya resuelve Babel y evita exigir `babel-preset-expo` como dependencia directa             | 009     |
+| 2026-10-07 | Pruebas sobre productos reales del catálogo, no objetos ficticios | Reproduce las reglas reales de `addItem` y evita falsear la validación contra el catálogo canónico  | 009     |
+| 2026-10-07 | Pruebas del carrito en `CartScreen-test.js` junto a la 009      | Sus reglas de hidratación y persistencia son la base sobre la que la 009 deshabilita la CTA          | 009/016 |
+| 2026-10-07 | `no-console` como advertencia, no error                        | El código usa `console.warn` en fallos de AsyncStorage legítimos y no debe romper el build            | 009     |
+
+### Validaciones
+
+1. `npm test`: 3 suites, 45 pruebas, todas aprobadas.
+2. `npm run lint`: 0 problemas.
+3. `npx expo export --platform all`: bundles iOS y Android generados, 0 errores.
+4. `npx expo-doctor`: 18/18 comprobaciones aprobadas; dependencias alineadas con SDK 54.
+5. Cobertura de criterios: los 14 criterios de aceptación de `spec.md` están cubiertos por pruebas o por compilación.
+6. Validación visual del flujo catálogo → detalle → carrito en Android e iOS: aprobado (usuario).
+
+### Resultado
+
+Feature 009 completada: los 14 criterios de aceptación de `spec.md` están cumplidos y verificados mediante pruebas automatizadas, compilación y validación visual en ambos dispositivos. Movida a "Hecho" en `roadmap.md`.
+
+---
+
 # 12. Features completadas
 
 | Nº  | Feature          | Estado       | Fecha      |
@@ -594,12 +731,15 @@ docs/development-log.md
 | 006 | Catálogo de productos | ✅ Completada | 2026-08-26 |
 | 007 | Categorías y filtros | ✅ Completada | 2026-08-26 |
 | 008 | Búsqueda | ✅ Completada | 2026-08-26 |
+| 009 | Detalle de producto | ✅ Completada | 2026-10-07 |
 
 ---
 
 # 13. Features en desarrollo
 
-*Sección vacía: no hay features "en curso" en este momento.*
+| Nº  | Feature             | Estado  | Fecha de apertura |
+| --- | ------------------- | ------- | ----------------- |
+| 016 | Carrito             | En curso | 2026-09-24 |
 
 ---
 

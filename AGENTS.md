@@ -18,7 +18,7 @@ AppClotheStore es una aplicación móvil de comercio electrónico para una tiend
 - Base de datos: Por definir
 - Backend: Por definir
 - Autenticación: Por definir
-- Tests: Por definir
+- Tests: Jest (`jest-expo`) + `@testing-library/react-native`
 
 ## Comandos
 
@@ -32,10 +32,16 @@ AppClotheStore es una aplicación móvil de comercio electrónico para una tiend
   — inicia el proyecto y lo abre en iOS.
 
 - `npm test`
-  — ejecuta los tests cuando sean configurados.
+  — ejecuta las pruebas automatizadas con Jest.
+
+- `npm run test:watch`
+  — ejecuta las pruebas en modo interactivo.
+
+- `npm run test:coverage`
+  — ejecuta las pruebas generando un informe de cobertura.
 
 - `npm run lint`
-  — revisa el estilo y posibles errores de código cuando el sistema de linting esté configurado.
+  — revisa el estilo y posibles errores de código con ESLint.
 
 - `npx expo export`
   — prepara una exportación del proyecto para producción.
@@ -189,17 +195,17 @@ La aplicación debe evolucionar progresivamente desde un prototipo de tienda de 
 - [x] Catálogo
 - [x] Categorías
 - [x] Detalle de producto
-- [x] Carrito
-- [x] Favoritos
+- [ ] Carrito — prototipo local en remediación
+- [ ] Favoritos
 - [x] Búsqueda
 
 ### Fase 3 — Navegación y estado
 
 - [x] React Navigation
 - [x] Context API
-- [x] Carrito global
-- [x] Favoritos globales
-- [x] Estado del usuario
+- [ ] Carrito global — prototipo local en remediación
+- [ ] Favoritos globales
+- [ ] Estado del usuario
 
 ### Fase 4 — Backend
 

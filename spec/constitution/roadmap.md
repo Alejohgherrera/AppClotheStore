@@ -14,13 +14,21 @@
 
 4. **004 · Navegación inicial** — Configurar la navegación principal de ClotheStore en `src/navigation/`.
 
-5. **005 · Modelo de productos** — Definir la estructura de datos necesaria para representar productos, categorías, variantes, tallas, colores, precios e inventario.
+5. **005 · Modelo de productos** — Definir la estructura de datos necesaria para representar productos, categorías, tallas, colores, precios y disponibilidad.
 
 6. **006 · Catálogo de productos** — Mostrar las prendas disponibles mediante una interfaz de exploración organizada.
 
 7. **007 · Categorías y filtros** — Extender el modelo de productos con tallas y colores, e implementar un sistema de filtros y ordenamiento en el catálogo.
 
 8. **008 · Búsqueda** — Permitir buscar productos por nombre, categoría y atributos disponibles.
+
+9. **009 · Detalle de producto** — Consolidar el prototipo de detalle, sus estados de selección, disponibilidad, accesibilidad y comportamiento de compra.
+
+## En curso
+
+*Features abiertas para remediar código existente o completar su validación. No se consideran terminadas hasta cumplir todos sus criterios.*
+
+16. **016 · Carrito** — Remediar el prototipo local de carrito antes de continuar con las features remotas. Su persistencia y reglas definitivas de stock seguirán dependiendo de las Features 010–015.
 
 ## Próximas 📋
 
@@ -29,8 +37,6 @@
 ### FASE 1 — Fundamentos
 
 ### FASE 2 — Catálogo
-
-9. **009 · Detalle de producto** — Mostrar información completa del producto, imágenes, precio, descripción y opciones disponibles.
 
 10. **010 · Tallas, variantes y stock** — Gestionar tallas, colores, variantes y disponibilidad de los productos.
 
@@ -47,8 +53,6 @@
 15. **015 · API de pedidos** — Proporcionar las operaciones necesarias para crear, consultar y gestionar pedidos.
 
 ### FASE 4 — Experiencia de compra
-
-16. **016 · Carrito** — Agregar, eliminar y modificar productos seleccionados antes del checkout.
 
 17. **017 · Favoritos** — Permitir guardar productos para consultarlos o comprarlos posteriormente.
 

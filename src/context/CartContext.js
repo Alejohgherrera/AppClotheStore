@@ -1,35 +1,121 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { products } from '../data/products';
 
 const STORAGE_KEY = '@clothestore/cart';
 
+export const CART_ACTION_ERRORS = {
+  NOT_HYDRATED: 'NOT_HYDRATED',
+  INVALID_PRODUCT: 'INVALID_PRODUCT',
+  PRODUCT_UNAVAILABLE: 'PRODUCT_UNAVAILABLE',
+  INVALID_VARIANT: 'INVALID_VARIANT',
+  INVALID_QUANTITY: 'INVALID_QUANTITY',
+};
+
 const CartContext = createContext(null);
 
-function buildCartKey(producto, talla, color) {
+export function buildCartKey(producto, talla, color) {
   return `${producto.id}::${talla || 'sin-talla'}::${color || 'sin-color'}`;
 }
 
-function normalizeCartItems(items) {
+function isPositiveInteger(value) {
+  return Number.isInteger(value) && value > 0;
+}
+
+function getColorName(color) {
+  if (color && typeof color === 'object') return color.nombre || null;
+  return typeof color === 'string' && color ? color : null;
+}
+
+function getVariant(producto, talla, color) {
+  const availableSizes = Array.isArray(producto.tallas) ? producto.tallas : [];
+  const availableColors = Array.isArray(producto.colores) ? producto.colores : [];
+  const normalizedTalla = typeof talla === 'string' && talla ? talla : null;
+  const normalizedColor = getColorName(color);
+
+  if (availableSizes.length > 0) {
+    if (!normalizedTalla || !availableSizes.includes(normalizedTalla)) return null;
+  } else if (normalizedTalla) {
+    return null;
+  }
+
+  if (availableColors.length > 0) {
+    if (!normalizedColor) {
+      if (availableColors.length !== 1) return null;
+      return { talla: normalizedTalla, color: availableColors[0].nombre };
+    }
+    if (!availableColors.some((availableColor) => availableColor.nombre === normalizedColor)) {
+      return null;
+    }
+  } else if (normalizedColor) {
+    return null;
+  }
+
+  return { talla: normalizedTalla, color: normalizedColor };
+}
+
+function findCanonicalProduct(productId, catalog = products) {
+  if (typeof productId !== 'string') return null;
+  return catalog.find((product) => product.id === productId) || null;
+}
+
+export function normalizeCartItems(items, catalog = products) {
   if (!Array.isArray(items)) return [];
-  return items.filter((item) => item && item.producto && item.cantidad > 0);
+
+  return items.reduce((normalized, item) => {
+    if (!item || typeof item !== 'object') return normalized;
+
+    const productId = item.productoId || item.producto?.id;
+    const producto = findCanonicalProduct(productId, catalog);
+    if (!producto || producto.disponible !== true) return normalized;
+
+    const variant = getVariant(producto, item.talla, item.color);
+    if (!variant || !isPositiveInteger(item.cantidad)) return normalized;
+
+    const id = buildCartKey(producto, variant.talla, variant.color);
+    const existing = normalized.find((cartItem) => cartItem.id === id);
+    if (existing) {
+      existing.cantidad += item.cantidad;
+      return normalized;
+    }
+
+    normalized.push({
+      id,
+      producto,
+      talla: variant.talla,
+      color: variant.color,
+      cantidad: item.cantidad,
+    });
+    return normalized;
+  }, []);
+}
+
+function actionError(reason) {
+  return { ok: false, reason };
 }
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [hydrated, setHydrated] = useState(false);
+  const [persistenceEnabled, setPersistenceEnabled] = useState(false);
 
   useEffect(() => {
     let active = true;
     AsyncStorage.getItem(STORAGE_KEY)
       .then((raw) => {
         if (!active) return;
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw);
-            setItems(normalizeCartItems(parsed));
-          } catch (error) {
-            console.warn('No se pudieron cargar los productos del carrito:', error);
-          }
+        if (!raw) {
+          setPersistenceEnabled(true);
+          setHydrated(true);
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          setItems(normalizeCartItems(parsed));
+          setPersistenceEnabled(true);
+        } catch (error) {
+          console.warn('No se pudieron cargar los productos del carrito:', error);
         }
         setHydrated(true);
       })
@@ -46,22 +132,39 @@ export function CartProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !persistenceEnabled) return;
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(items)).catch((error) => {
       console.warn('No se pudieron guardar los productos del carrito:', error);
     });
-  }, [items, hydrated]);
+  }, [items, hydrated, persistenceEnabled]);
 
   const addItem = useCallback((producto, talla, color, cantidad = 1) => {
-    if (!producto || !talla) return;
+    if (!hydrated) return actionError(CART_ACTION_ERRORS.NOT_HYDRATED);
+    if (!producto || typeof producto.id !== 'string') {
+      return actionError(CART_ACTION_ERRORS.INVALID_PRODUCT);
+    }
 
-    const key = buildCartKey(producto, talla, color);
+    const canonicalProduct = findCanonicalProduct(producto.id);
+    if (!canonicalProduct) return actionError(CART_ACTION_ERRORS.INVALID_PRODUCT);
+    if (!canonicalProduct.disponible) {
+      return actionError(CART_ACTION_ERRORS.PRODUCT_UNAVAILABLE);
+    }
+
+    const variant = getVariant(canonicalProduct, talla, color);
+    if (!variant) return actionError(CART_ACTION_ERRORS.INVALID_VARIANT);
+
+    const normalizedQuantity = cantidad === undefined ? 1 : cantidad;
+    if (!isPositiveInteger(normalizedQuantity)) {
+      return actionError(CART_ACTION_ERRORS.INVALID_QUANTITY);
+    }
+
+    const itemId = buildCartKey(canonicalProduct, variant.talla, variant.color);
     setItems((prev) => {
-      const existing = prev.find((item) => item.id === key);
+      const existing = prev.find((item) => item.id === itemId);
       if (existing) {
         return prev.map((item) =>
-          item.id === key
-            ? { ...item, cantidad: item.cantidad + cantidad }
+          item.id === itemId
+            ? { ...item, cantidad: item.cantidad + normalizedQuantity }
             : item,
         );
       }
@@ -69,38 +172,56 @@ export function CartProvider({ children }) {
       return [
         ...prev,
         {
-          id: key,
-          producto,
-          talla,
-          color: color || null,
-          cantidad,
+          id: itemId,
+          producto: canonicalProduct,
+          talla: variant.talla,
+          color: variant.color,
+          cantidad: normalizedQuantity,
         },
       ];
     });
-  }, []);
+
+    return { ok: true, itemId };
+  }, [hydrated]);
 
   const removeItem = useCallback((itemId) => {
+    if (!hydrated) return actionError(CART_ACTION_ERRORS.NOT_HYDRATED);
+    if (typeof itemId !== 'string' || !itemId) {
+      return actionError(CART_ACTION_ERRORS.INVALID_PRODUCT);
+    }
     setItems((prev) => prev.filter((item) => item.id !== itemId));
-  }, []);
+    return { ok: true, itemId };
+  }, [hydrated]);
 
   const updateQuantity = useCallback((itemId, cantidad) => {
-    if (cantidad <= 0) {
+    if (!hydrated) return actionError(CART_ACTION_ERRORS.NOT_HYDRATED);
+    if (typeof itemId !== 'string' || !itemId) {
+      return actionError(CART_ACTION_ERRORS.INVALID_PRODUCT);
+    }
+    if (cantidad === 0) {
       setItems((prev) => prev.filter((item) => item.id !== itemId));
-      return;
+      return { ok: true, itemId, removed: true };
+    }
+    if (!isPositiveInteger(cantidad)) {
+      return actionError(CART_ACTION_ERRORS.INVALID_QUANTITY);
     }
 
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, cantidad } : item,
-      ),
-    );
-  }, []);
+    setItems((prev) => prev.map((item) =>
+      item.id === itemId ? { ...item, cantidad } : item,
+    ));
+    return { ok: true, itemId };
+  }, [hydrated]);
 
   const clearCart = useCallback(() => {
+    if (!hydrated) return actionError(CART_ACTION_ERRORS.NOT_HYDRATED);
     setItems([]);
-  }, []);
+    return { ok: true };
+  }, [hydrated]);
 
-  const total = items.reduce((sum, item) => sum + item.producto.precio * item.cantidad, 0);
+  const total = items.reduce(
+    (sum, item) => sum + item.producto.precio * item.cantidad,
+    0,
+  );
   const count = items.reduce((sum, item) => sum + item.cantidad, 0);
 
   const value = {
