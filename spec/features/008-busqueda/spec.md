@@ -1,6 +1,6 @@
 # 008 · Búsqueda
 
-**Estado:** en curso
+**Estado:** completada
 
 ## Qué hace
 
@@ -23,11 +23,11 @@ Esta feature reutiliza la infraestructura existente de filtros y contexto global
 * [ ] La búsqueda encuentra productos por categoría.
 * [ ] La búsqueda encuentra productos por atributos disponibles (tallas y colores).
 * [ ] La búsqueda es insensible a mayúsculas y minúsculas.
-* [ ] La búsqueda respeta los acentos del idioma español.
+* [ ] La búsqueda es insensible a mayúsculas, minúsculas y acentos.
 * [ ] La búsqueda se combina con los filtros activos (precio, tallas, colores, disponibilidad).
 * [ ] La búsqueda respeta el ordenamiento seleccionado.
 * [ ] La búsqueda se limita al género y categoría actualmente seleccionados.
-* [ ] La búsqueda se limpia al cambiar de categoría.
+* [ ] La búsqueda se conserva al volver a la misma combinación de género y categoría, y comienza vacía en una categoría nueva.
 * [ ] Se muestra un estado vacío informativo cuando no hay resultados.
 * [ ] El término de búsqueda se muestra claramente en la interfaz.
 * [ ] La aplicación continúa iniciando correctamente con Expo después de implementar la feature.

@@ -31,7 +31,7 @@
 
 * [x] Integrar `SearchBar` en `ProductListScreen`.
 * [x] Sincronizar el término de búsqueda con `FilterContext`.
-* [x] Limpiar la búsqueda al cambiar de categoría.
+* [x] Conservar la búsqueda por combinación de género y categoría.
 * [x] Mostrar el término de búsqueda claramente en la interfaz.
 * [x] Diferenciar el estado vacío de "sin productos" del de "sin resultados".
 * [x] Verificar que la búsqueda se combina con filtros y ordenamiento.
@@ -41,8 +41,7 @@
 
 * [x] Ejecutar la aplicación con Expo.
 * [x] Verificar visualmente la búsqueda en dispositivo o emulador.
-* [x] Probar búsquedas con acentos.
-* [x] Probar búsqueda con acentos.
+* [x] Probar búsquedas con y sin acentos.
 * [x] Probar búsqueda por nombre, categoría y atributos.
 * [x] Validar todos los criterios de aceptación definidos en `spec.md`.
 

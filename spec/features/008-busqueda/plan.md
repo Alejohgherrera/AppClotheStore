@@ -12,7 +12,7 @@ Implementar búsqueda en tiempo real de productos por nombre, descripción, cate
 4. Añadir un componente `SearchBar` reutilizable en `src/components/`.
 5. Integrar el campo de búsqueda en `ProductListScreen`.
 6. Sincronizar el término de búsqueda con el contexto global de filtros.
-7. Limpiar la búsqueda al cambiar de categoría.
+7. Conservar la búsqueda por combinación de género y categoría, evitando borrados al montar la pantalla.
 8. Actualizar el estado vacío para diferenciar "sin resultados" de "sin productos".
 9. Validar visualmente y actualizar el roadmap.
 

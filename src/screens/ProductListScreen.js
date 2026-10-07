@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing, typography } from '../theme';
 import { getProductsByGenderAndCategory } from '../data/categories';
 import {
@@ -7,7 +7,6 @@ import {
   countActiveFilters,
   getActiveFilterChips,
   getPriceRange,
-  isPriceFilterActive,
 } from '../data/filters';
 import { useFilters } from '../context/FilterContext';
 import ProductCard from '../components/ProductCard';
@@ -19,13 +18,14 @@ import SearchBar from '../components/SearchBar';
 
 export default function ProductListScreen({ route, navigation }) {
   const { genero, categoria } = route.params;
-  const { getFiltersFor, setFiltersFor, resetFiltersFor } = useFilters();
+  const { hydrated, getFiltersFor, setFiltersFor } = useFilters();
 
+  const baseProducts = useMemo(
+    () => getProductsByGenderAndCategory(genero.nombre, categoria.nombre),
+    [genero.nombre, categoria.nombre],
+  );
   const filters = getFiltersFor(genero, categoria);
-  const baseProducts = getProductsByGenderAndCategory(genero.nombre, categoria.nombre);
-
   const priceRange = useMemo(() => getPriceRange(baseProducts), [baseProducts]);
-
   const filteredProducts = useMemo(
     () => applyFilters(baseProducts, filters, priceRange),
     [baseProducts, filters, priceRange],
@@ -35,12 +35,7 @@ export default function ProductListScreen({ route, navigation }) {
   const [sortModalVisible, setSortModalVisible] = useState(false);
 
   const activeChips = getActiveFilterChips(filters, priceRange);
-  const activeCount = countActiveFilters(filters);
-
-  // Limpiar búsqueda al cambiar de categoría
-  useEffect(() => {
-    resetFiltersFor(genero, categoria);
-  }, [genero, categoria, resetFiltersFor]);
+  const activeCount = countActiveFilters(filters, priceRange);
 
   const handleApplyFilters = useCallback(
     (newFilters) => {
@@ -93,6 +88,15 @@ export default function ProductListScreen({ route, navigation }) {
     });
   }, [genero, categoria, navigation]);
 
+  if (!hydrated) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator color={colors.accent} size="large" />
+        <Text style={styles.loadingText}>Cargando filtros…</Text>
+      </View>
+    );
+  }
+
   if (baseProducts.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -144,21 +148,12 @@ export default function ProductListScreen({ route, navigation }) {
           </View>
         }
         ListEmptyComponent={
-          baseProducts.length === 0 ? (
-            <View style={styles.noResultsContainer}>
-              <Text style={styles.noResultsTitle}>Sin productos</Text>
-              <Text style={styles.noResultsMessage}>
-                Aún no hay prendas en esta categoría.
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.noResultsContainer}>
-              <Text style={styles.noResultsTitle}>Sin resultados</Text>
-              <Text style={styles.noResultsMessage}>
-                Ajusta los filtros para ver más productos.
-              </Text>
-            </View>
-          )
+          <View style={styles.noResultsContainer}>
+            <Text style={styles.noResultsTitle}>Sin resultados</Text>
+            <Text style={styles.noResultsMessage}>
+              Ajusta los filtros para ver más productos.
+            </Text>
+          </View>
         }
       />
 
@@ -196,6 +191,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     gap: spacing.xs,
     flexDirection: 'row',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  loadingText: {
+    ...typography.body,
+    color: colors.textSecondary,
   },
   emptyContainer: {
     flex: 1,
