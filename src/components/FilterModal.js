@@ -137,6 +137,11 @@ export default function FilterModal({
                 }
               />
             </View>
+            {localFilters.precioMin > localFilters.precioMax && (
+              <Text style={styles.errorText}>
+                El precio mínimo no puede superar al máximo.
+              </Text>
+            )}
           </View>
 
           <View style={styles.section}>
@@ -198,7 +203,12 @@ export default function FilterModal({
             <Text style={styles.clearText}>Limpiar</Text>
           </Pressable>
           <Pressable
-            style={[styles.footerButton, styles.applyButton]}
+            disabled={localFilters.precioMin > localFilters.precioMax}
+            style={[
+              styles.footerButton,
+              styles.applyButton,
+              localFilters.precioMin > localFilters.precioMax && styles.applyButtonDisabled,
+            ]}
             onPress={() => onApply(localFilters)}
           >
             <Text style={styles.applyText}>Aplicar</Text>
@@ -293,6 +303,10 @@ const styles = StyleSheet.create({
     color: colors.textDisabled,
     paddingBottom: spacing.sm,
   },
+  errorText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
   chipGroup: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -359,6 +373,9 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     backgroundColor: colors.accent,
+  },
+  applyButtonDisabled: {
+    backgroundColor: colors.interactive.disabled,
   },
   applyText: {
     ...typography.body,

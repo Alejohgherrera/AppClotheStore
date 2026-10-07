@@ -31,7 +31,7 @@
 
 - [x] Crear `src/context/FilterContext.js` con el contexto de filtros.
 - [x] Implementar el estado de filtros dentro del contexto.
-- [x] Implementar las funciones `updateFilters`, `resetFilters` y `updateSort`.
+- [x] Implementar las funciones `getFiltersFor`, `setFiltersFor` y `resetFiltersFor`.
 - [x] Crear `src/hooks/useFilterPersistence.js` para sincronizar con AsyncStorage.
 - [x] Integrar el `FilterProvider` en el árbol de componentes.
 
@@ -53,7 +53,8 @@
 - [x] Mostrar chips de filtros activos encima de la lista.
 - [x] Mostrar la `FilterBar` debajo de los chips.
 - [x] Gestionar el estado de visibilidad de los modales.
-- [x] Implementar el reset de filtros al cambiar de categoría.
+- [x] Mantener filtros independientes por combinación de género y categoría.
+- [x] Evitar un reset accidental al montar la pantalla.
 - [x] Verificar que la navegación por género → categoría → productos siga funcionando.
 
 ## Validación
@@ -65,7 +66,7 @@
 - [x] Probar cada opción de ordenamiento.
 - [x] Verificar que los chips se muestran y eliminan correctamente.
 - [x] Verificar que los filtros persisten al cerrar y abrir la aplicación.
-- [x] Verificar que los filtros se resetean al cambiar de categoría.
+- [x] Verificar que una categoría nueva usa valores por defecto y que volver a una categoría conserva sus filtros.
 - [x] Verificar que la aplicación continúa iniciando correctamente.
 - [x] Validar todos los criterios de aceptación definidos en `spec.md`.
 

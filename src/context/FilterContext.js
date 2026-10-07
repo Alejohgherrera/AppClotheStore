@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { DEFAULT_FILTERS } from '../data/filters';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { DEFAULT_FILTERS, normalizeFilters, normalizeStoredFilterMap } from '../data/filters';
 import { loadStoredFilters, saveStoredFilters } from '../hooks/useFilterPersistence';
 
 const STORAGE_KEY = '@clothestore/filters';
@@ -17,14 +17,18 @@ function buildInitialState() {
 export function FilterProvider({ children }) {
   const [filterMap, setFilterMap] = useState(buildInitialState);
   const [hydrated, setHydrated] = useState(false);
+  const [persistenceEnabled, setPersistenceEnabled] = useState(false);
 
   useEffect(() => {
     let active = true;
-    loadStoredFilters(STORAGE_KEY).then((stored) => {
+    loadStoredFilters(STORAGE_KEY).then((result) => {
       if (!active) return;
-      if (stored && typeof stored === 'object') {
-        setFilterMap(stored);
+      if (result?.failed) {
+        setHydrated(true);
+        return;
       }
+      setFilterMap(normalizeStoredFilterMap(result?.value));
+      setPersistenceEnabled(true);
       setHydrated(true);
     });
     return () => {
@@ -33,9 +37,9 @@ export function FilterProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !persistenceEnabled) return;
     saveStoredFilters(STORAGE_KEY, filterMap);
-  }, [filterMap, hydrated]);
+  }, [filterMap, hydrated, persistenceEnabled]);
 
   const getFiltersFor = useCallback(
     (genero, categoria) => {
@@ -46,21 +50,23 @@ export function FilterProvider({ children }) {
   );
 
   const setFiltersFor = useCallback((genero, categoria, filters) => {
+    if (!hydrated) return;
     const key = contextKey(genero, categoria);
     setFilterMap((prev) => ({
       ...prev,
-      [key]: { ...DEFAULT_FILTERS, ...filters },
+      [key]: normalizeFilters(filters),
     }));
-  }, []);
+  }, [hydrated]);
 
   const resetFiltersFor = useCallback((genero, categoria) => {
+    if (!hydrated) return;
     const key = contextKey(genero, categoria);
     setFilterMap((prev) => {
       const next = { ...prev };
       delete next[key];
       return next;
     });
-  }, []);
+  }, [hydrated]);
 
   const value = {
     hydrated,

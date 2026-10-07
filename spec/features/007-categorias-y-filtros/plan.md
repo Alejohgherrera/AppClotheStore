@@ -68,13 +68,12 @@ Esta función es pura y testeable. No accede a AsyncStorage ni a React Context.
 
 ### `src/context/FilterContext.js`
 
-Contexto que mantiene el estado de los filtros y el ordenamiento. Provee:
+Contexto que mantiene el estado de los filtros y el ordenamiento por combinación de género y categoría. Provee:
 
-- `filters`: objeto con los valores actuales de los filtros para una combinación género + categoría.
-- `updateFilters(newFilters)`: actualiza los filtros.
-- `resetFilters()`: resetea los filtros a sus valores por defecto.
-- `updateSort(sortBy)`: actualiza el ordenamiento.
-- `getCurrentFilters(genero, categoria)`: obtiene los filtros para una combinación específica, o los valores por defecto si no existen.
+- `getFiltersFor(genero, categoria)`: obtiene los filtros de una combinación, o los valores por defecto si no existen.
+- `setFiltersFor(genero, categoria, filters)`: actualiza los filtros de una combinación.
+- `resetFiltersFor(genero, categoria)`: elimina los filtros guardados de una combinación.
+- `hydrated`: indica que la carga inicial terminó.
 
 El contexto se inicializa vacío y se carga desde AsyncStorage al montar.
 
@@ -167,4 +166,5 @@ No se requieren rutas nuevas. Los modales se manejan como componentes superpuest
 
 - **Bottom sheet vs modal nativo:** se usa `Modal` de React Native con animación slide desde abajo, que es compatible con Expo SDK 54 sin dependencias adicionales.
 - **Persistencia por género + categoría:** los filtros se guardan por combinación de género y categoría, para que el usuario pueda tener filtros diferentes en "Hombre → Camisetas" y "Mujer → Vestidos".
-- **Reset al cambiar de categoría:** cuando el usuario navega a una nueva categoría, los filtros se resetean a sus valores por defecto para esa categoría.
+- **Hidratación antes de interactuar:** la pantalla de lista muestra un estado de carga hasta normalizar los datos guardados.
+- **Sin máximo serializable:** `precioMax` se omite cuando vale `Infinity` y los valores antiguos `null` se normalizan al valor sin máximo.

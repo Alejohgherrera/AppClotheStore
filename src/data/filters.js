@@ -15,6 +15,82 @@ export const DEFAULT_FILTERS = {
   busqueda: '',
 };
 
+function toFiniteNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function normalizeStringArray(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.filter((item) => typeof item === 'string' && item.trim()))];
+}
+
+export function normalizeFilters(filters = {}) {
+  const source = filters && typeof filters === 'object' ? filters : {};
+  const precioMinValue = toFiniteNumber(source.precioMin);
+  const precioMaxValue = toFiniteNumber(source.precioMax);
+  const precioMin = precioMinValue === null
+    ? DEFAULT_FILTERS.precioMin
+    : Math.max(DEFAULT_FILTERS.precioMin, precioMinValue);
+  const requestedMax = precioMaxValue === null
+    ? DEFAULT_FILTERS.precioMax
+    : Math.max(DEFAULT_FILTERS.precioMin, precioMaxValue);
+  const precioMax = requestedMax === DEFAULT_FILTERS.precioMax || requestedMax >= precioMin
+    ? requestedMax
+    : precioMin;
+  const sortBy = SORT_OPTIONS.some((option) => option.value === source.sortBy)
+    ? source.sortBy
+    : DEFAULT_FILTERS.sortBy;
+
+  return {
+    ...DEFAULT_FILTERS,
+    precioMin,
+    precioMax,
+    tallas: normalizeStringArray(source.tallas),
+    colores: normalizeStringArray(source.colores),
+    soloDisponibles: source.soloDisponibles === true,
+    sortBy,
+    busqueda: typeof source.busqueda === 'string' ? source.busqueda.trim() : DEFAULT_FILTERS.busqueda,
+  };
+}
+
+export function normalizeStoredFilterMap(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+
+  return Object.entries(value).reduce((normalized, [key, filters]) => {
+    if (filters && typeof filters === 'object' && !Array.isArray(filters)) {
+      normalized[key] = normalizeFilters(filters);
+    }
+    return normalized;
+  }, {});
+}
+
+export function serializeFilters(filters) {
+  const normalized = normalizeFilters(filters);
+  const serialized = {
+    precioMin: normalized.precioMin,
+    tallas: normalized.tallas,
+    colores: normalized.colores,
+    soloDisponibles: normalized.soloDisponibles,
+    sortBy: normalized.sortBy,
+    busqueda: normalized.busqueda,
+  };
+
+  if (normalized.precioMax !== DEFAULT_FILTERS.precioMax) {
+    serialized.precioMax = normalized.precioMax;
+  }
+
+  return serialized;
+}
+
+export function serializeFilterMap(value) {
+  return Object.entries(normalizeStoredFilterMap(value)).reduce((serialized, [key, filters]) => {
+    serialized[key] = serializeFilters(filters);
+    return serialized;
+  }, {});
+}
+
 export function normalizeText(text) {
   if (typeof text !== 'string') return '';
   return text
@@ -25,8 +101,11 @@ export function normalizeText(text) {
 }
 
 export function getPriceRange(products) {
-  if (!products || products.length === 0) return { min: 0, max: 0 };
-  const prices = products.map((p) => p.precio);
+  if (!Array.isArray(products) || products.length === 0) return { min: 0, max: 0 };
+  const prices = products
+    .map((product) => product && product.precio)
+    .filter((price) => Number.isFinite(price));
+  if (prices.length === 0) return { min: 0, max: 0 };
   return {
     min: Math.floor(Math.min(...prices)),
     max: Math.ceil(Math.max(...prices)),
@@ -34,96 +113,119 @@ export function getPriceRange(products) {
 }
 
 export function applyFilters(products, filters, priceRange) {
-  if (!products) return [];
+  if (!Array.isArray(products)) return [];
 
+  const activeFilters = normalizeFilters(filters);
+  const activePriceRange = priceRange || getPriceRange(products);
   let filtered = products.slice();
 
-  if (filters.precioMin > priceRange.min) {
-    filtered = filtered.filter((p) => p.precio >= filters.precioMin);
+  if (activeFilters.precioMin > activePriceRange.min) {
+    filtered = filtered.filter((product) => product.precio >= activeFilters.precioMin);
   }
 
-  if (filters.precioMax < priceRange.max) {
-    filtered = filtered.filter((p) => p.precio <= filters.precioMax);
+  if (activeFilters.precioMax < activePriceRange.max) {
+    filtered = filtered.filter((product) => product.precio <= activeFilters.precioMax);
   }
 
-  if (filters.tallas.length > 0) {
-    filtered = filtered.filter((p) =>
-      filters.tallas.some((talla) => (p.tallas || []).includes(talla)),
+  if (activeFilters.tallas.length > 0) {
+    filtered = filtered.filter((product) =>
+      activeFilters.tallas.some((talla) => (product.tallas || []).includes(talla)),
     );
   }
 
-  if (filters.colores.length > 0) {
-    filtered = filtered.filter((p) =>
-      filters.colores.some((color) =>
-        (p.colores || []).some((c) => c.nombre === color),
+  if (activeFilters.colores.length > 0) {
+    filtered = filtered.filter((product) =>
+      activeFilters.colores.some((color) =>
+        (product.colores || []).some((productColor) => productColor.nombre === color),
       ),
     );
   }
 
-  if (filters.soloDisponibles) {
-    filtered = filtered.filter((p) => p.disponible);
+  if (activeFilters.soloDisponibles) {
+    filtered = filtered.filter((product) => product.disponible);
   }
 
-  if (filters.busqueda && filters.busqueda.trim()) {
-    const query = normalizeText(filters.busqueda);
-    filtered = filtered.filter((p) => {
-      const nombre = normalizeText(p.nombre);
-      const descripcion = normalizeText(p.descripcion);
-      const categoria = normalizeText(p.categoria);
-      const tallas = (p.tallas || []).map((t) => normalizeText(t)).join(' ');
-      const colores = (p.colores || []).map((c) => normalizeText(c.nombre)).join(' ');
+  if (activeFilters.busqueda) {
+    const query = normalizeText(activeFilters.busqueda);
+    filtered = filtered.filter((product) => {
+      const nombre = normalizeText(product.nombre);
+      const descripcion = normalizeText(product.descripcion);
+      const categoria = normalizeText(product.categoria);
+      const tallas = (product.tallas || []).map((talla) => normalizeText(talla)).join(' ');
+      const colores = (product.colores || [])
+        .map((color) => normalizeText(color.nombre))
+        .join(' ');
       const searchableText = `${nombre} ${descripcion} ${categoria} ${tallas} ${colores}`;
       return searchableText.includes(query);
     });
   }
 
-  if (filters.sortBy === 'price_asc') {
+  if (activeFilters.sortBy === 'price_asc') {
     filtered.sort((a, b) => a.precio - b.precio);
-  } else if (filters.sortBy === 'price_desc') {
+  } else if (activeFilters.sortBy === 'price_desc') {
     filtered.sort((a, b) => b.precio - a.precio);
-  } else if (filters.sortBy === 'name_asc') {
+  } else if (activeFilters.sortBy === 'name_asc') {
     filtered.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   }
 
   return filtered;
 }
 
-export function countActiveFilters(filters) {
+export function countActiveFilters(filters, priceRange) {
+  const activeFilters = normalizeFilters(filters);
   let count = 0;
-  if (filters.soloDisponibles) count++;
-  if (filters.tallas.length > 0) count++;
-  if (filters.colores.length > 0) count++;
+  if (activeFilters.soloDisponibles) count++;
+  if (activeFilters.tallas.length > 0) count++;
+  if (activeFilters.colores.length > 0) count++;
+  if (activeFilters.busqueda) count++;
+  if (priceRange) {
+    if (isPriceFilterActive(activeFilters, priceRange)) count++;
+  } else if (
+    activeFilters.precioMin > DEFAULT_FILTERS.precioMin
+    || activeFilters.precioMax !== DEFAULT_FILTERS.precioMax
+  ) {
+    count++;
+  }
   return count;
 }
 
 export function isPriceFilterActive(filters, priceRange) {
-  return filters.precioMin > priceRange.min || filters.precioMax < priceRange.max;
+  const activeFilters = normalizeFilters(filters);
+  if (!priceRange) {
+    return activeFilters.precioMin > DEFAULT_FILTERS.precioMin
+      || activeFilters.precioMax !== DEFAULT_FILTERS.precioMax;
+  }
+  return activeFilters.precioMin > priceRange.min || activeFilters.precioMax < priceRange.max;
 }
 
 export function getActiveFilterChips(filters, priceRange) {
+  const activeFilters = normalizeFilters(filters);
   const chips = [];
 
-  if (isPriceFilterActive(filters, priceRange)) {
+  if (isPriceFilterActive(activeFilters, priceRange)) {
+    const maxPrice = activeFilters.precioMax === Infinity
+      ? (priceRange?.max ?? activeFilters.precioMin)
+      : activeFilters.precioMax;
     chips.push({
       key: 'precio',
-      label: `Precio: ${filters.precioMin}€ - ${filters.precioMax === Infinity ? priceRange.max : filters.precioMax}€`,
+      label: `Precio: ${activeFilters.precioMin}€ - ${maxPrice}€`,
     });
   }
 
-  if (filters.tallas.length > 0) {
-    chips.push({ key: 'tallas', label: `Talla: ${filters.tallas.join(', ')}` });
+  if (activeFilters.tallas.length > 0) {
+    chips.push({ key: 'tallas', label: `Talla: ${activeFilters.tallas.join(', ')}` });
   }
 
-  if (filters.colores.length > 0) {
-    chips.push({ key: 'colores', label: `Color: ${filters.colores.join(', ')}` });
+  if (activeFilters.colores.length > 0) {
+    chips.push({ key: 'colores', label: `Color: ${activeFilters.colores.join(', ')}` });
   }
 
-  if (filters.soloDisponibles) {
+  if (activeFilters.soloDisponibles) {
     chips.push({ key: 'disponibles', label: 'Solo disponibles' });
   }
 
-  if (filters.busqueda && filters.busqueda.trim()) {
-    chips.push({ key: 'busqueda', label: `Buscar: "${filters.busqueda}"` });
+  if (activeFilters.busqueda) {
+    chips.push({ key: 'busqueda', label: `Buscar: "${activeFilters.busqueda}"` });
   }
 
   return chips;

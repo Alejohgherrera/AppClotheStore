@@ -106,30 +106,28 @@ Al pulsar "Ordenar", se abre un modal simple (bottom sheet) con las opciones de 
 
 ### Contexto de navegación
 
-Los filtros y el ordenamiento se aplican dentro del contexto de la pantalla actual. Si el usuario está en "Hombre → Camisetas", los filtros solo afectan a las camisetas de hombre. Al cambiar de categoría, los filtros se resetean a sus valores por defecto.
+Los filtros y el ordenamiento se aplican dentro del contexto de la pantalla actual. Si el usuario está en "Hombre → Camisetas", los filtros solo afectan a las camisetas de hombre. Cada combinación de género y categoría tiene su propio conjunto de filtros; una categoría nueva comienza con los valores por defecto y volver a una categoría conserva sus filtros guardados.
 
 ## Persistencia de filtros
 
 Los filtros y el ordenamiento seleccionados se guardan en `AsyncStorage` para que persistan entre sesiones de la aplicación.
 
-La estructura almacenada es:
+La estructura almacenada es un mapa indexado por la combinación de género y categoría:
 
 ```json
 {
-  "filters": {
-    "genero": "hombre",
-    "categoria": "camisetas",
+  "hombre::camisetas": {
     "precioMin": 0,
-    "precioMax": 100,
     "tallas": [],
     "colores": [],
     "soloDisponibles": false,
-    "sortBy": "default"
+    "sortBy": "default",
+    "busqueda": ""
   }
 }
 ```
 
-Cuando el usuario navega a una pantalla de producto, se verifica si los filtros guardados corresponden a la misma combinación género + categoría. Si no, se usa el valor por defecto.
+`precioMax` se omite cuando no existe un máximo, porque `Infinity` no es un valor serializable en JSON. Durante la carga, los datos antiguos con `precioMax: null` se interpretan como ausencia de máximo.
 
 ## Dependencias
 
@@ -150,8 +148,9 @@ Cuando el usuario navega a una pantalla de producto, se verifica si los filtros 
 - [ ] Los chips de filtros activos se muestran y permiten eliminar filtros individuales.
 - [ ] El modal de filtros permite modificar filtros antes de aplicar.
 - [ ] El modal de ordenamiento permite seleccionar y aplicar una opción.
-- [ ] Los filtros persisten en `AsyncStorage` entre sesiones.
-- [ ] Los filtros se resetean al cambiar de categoría.
+- [ ] Los filtros se guardan por combinación de género y categoría.
+- [ ] Una categoría nueva usa los valores por defecto.
+- [ ] Volver a una categoría restaura sus filtros guardados.
 - [ ] La UI utiliza los tokens de `src/theme/`.
 - [ ] La aplicación inicia correctamente después de la implementación.
 - [ ] No se introducen dependencias externas innecesarias.
