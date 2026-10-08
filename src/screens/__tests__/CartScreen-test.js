@@ -5,6 +5,7 @@ import CartScreen from '../CartScreen';
 import { CartProvider } from '../../context/CartContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatPrice, products } from '../../data/products';
+import { getVariantStock } from '../../data/inventory';
 
 const STORAGE_KEY = '@clothestore/cart';
 
@@ -163,6 +164,68 @@ describe('CartScreen', () => {
 
       const checkout = screen.getByLabelText('Finalizar compra, próximamente');
       expect(checkout.props.accessibilityState.disabled).toBe(true);
+    });
+  });
+
+  describe('límite de stock', () => {
+    it('permite aumentar mientras quede stock', async () => {
+      await persistir([
+        { productoId: productoReal.id, talla: 'M', color: 'Negro', cantidad: 2 },
+      ]);
+      await montarCarrito();
+      await waitFor(() => expect(screen.getByText(productoReal.nombre)).toBeTruthy());
+
+      const aumentar = screen.getByLabelText(
+        `Aumentar cantidad de ${productoReal.nombre}`,
+      );
+      expect(aumentar.props.accessibilityState.disabled).toBe(false);
+    });
+
+    it('deshabilita el aumento al alcanzar el stock disponible', async () => {
+      const stockDisponible = getVariantStock(productoReal.id, 'M', 'Negro');
+      await persistir([
+        {
+          productoId: productoReal.id,
+          talla: 'M',
+          color: 'Negro',
+          cantidad: stockDisponible,
+        },
+      ]);
+      await montarCarrito();
+      await waitFor(() => expect(screen.getByText(productoReal.nombre)).toBeTruthy());
+
+      const aumentar = screen.getByLabelText(
+        `Aumentar cantidad de ${productoReal.nombre}, sin más stock`,
+      );
+      expect(aumentar.props.accessibilityState.disabled).toBe(true);
+    });
+
+    it('indica el máximo disponible al alcanzar el límite', async () => {
+      const stockDisponible = getVariantStock(productoReal.id, 'M', 'Negro');
+      await persistir([
+        {
+          productoId: productoReal.id,
+          talla: 'M',
+          color: 'Negro',
+          cantidad: stockDisponible,
+        },
+      ]);
+      await montarCarrito();
+      await waitFor(() => expect(screen.getByText(productoReal.nombre)).toBeTruthy());
+
+      expect(
+        screen.getByText(`Máximo disponible: ${stockDisponible}`),
+      ).toBeTruthy();
+    });
+
+    it('no muestra el aviso de límite si queda stock', async () => {
+      await persistir([
+        { productoId: productoReal.id, talla: 'M', color: 'Negro', cantidad: 1 },
+      ]);
+      await montarCarrito();
+      await waitFor(() => expect(screen.getByText(productoReal.nombre)).toBeTruthy());
+
+      expect(screen.queryByText(/Máximo disponible/)).toBeNull();
     });
   });
 

@@ -2,9 +2,13 @@ import { render, screen, fireEvent, act } from '@testing-library/react-native';
 import ProductDetailScreen from '../ProductDetailScreen';
 import { CartProvider } from '../../context/CartContext';
 import { formatPrice, products } from '../../data/products';
+import { getProductStock } from '../../data/inventory';
 
 const productoDisponible = products.find(
   (product) => product.id === 'pack-boxers-catterick-bn',
+);
+const productoConTallaAgotada = products.find(
+  (product) => product.id === 'boxer-catterick-negro',
 );
 const productoAgotado = products.find(
   (product) => product.id === 'boxer-catterick-blanco',
@@ -93,15 +97,15 @@ describe('ProductDetailScreen', () => {
     });
 
     it('comunica el estado seleccionado del color', async () => {
-      await renderDetalle(productoDisponible);
-      const segundoColor = productoDisponible.colores[1];
+      await renderDetalle(productoConTallaAgotada);
+      const color = productoConTallaAgotada.colores[0];
 
       await fireEvent.press(
-        screen.getByLabelText(`Seleccionar color ${segundoColor.nombre}`),
+        screen.getByLabelText(`Seleccionar color ${color.nombre}`),
       );
 
       expect(
-        screen.getByLabelText(`Seleccionar color ${segundoColor.nombre}`).props
+        screen.getByLabelText(`Seleccionar color ${color.nombre}`).props
           .accessibilityState.selected,
       ).toBe(true);
     });
@@ -198,23 +202,98 @@ describe('ProductDetailScreen', () => {
       expect(screen.queryByText('Agregado al carrito.')).toBeNull();
     });
 
-    it('delega la validación al carrito y no confirma si el producto no existe en el catálogo', async () => {
+    it('trata como agotado un producto ausente del catálogo', async () => {
       const productoFicticio = {
         ...productoDisponible,
         id: 'producto-inexistente-en-catalogo',
       };
       await renderDetalle(productoFicticio);
 
+      expect(screen.getByText('Agotado')).toBeTruthy();
+      expect(screen.getByLabelText('Producto agotado')).toBeTruthy();
+      expect(screen.queryByText('Agregado al carrito.')).toBeNull();
+    });
+
+    it('no permite agregar una variante agotada', async () => {
+      await renderDetalle(productoDisponible);
+
       await fireEvent.press(
-        screen.getByLabelText(`Seleccionar talla ${productoFicticio.tallas[0]}`),
+        screen.getByLabelText(`Seleccionar talla ${productoDisponible.tallas[2]}`),
       );
       await fireEvent.press(
-        screen.getByLabelText(`Seleccionar color ${productoFicticio.colores[0].nombre}`),
+        screen.getByLabelText(`Seleccionar color ${productoDisponible.colores[1].nombre}`),
       );
       await fireEvent.press(screen.getByLabelText('Agregar al carrito'));
 
+      expect(screen.getByText('Esta combinación está agotada.')).toBeTruthy();
       expect(screen.queryByText('Agregado al carrito.')).toBeNull();
-      expect(screen.getByText('No se pudo agregar el producto.')).toBeTruthy();
+    });
+  });
+
+  describe('variantes agotadas', () => {
+    it('marca como agotada una talla sin stock en ningún color', async () => {
+      await renderDetalle(productoConTallaAgotada);
+
+      expect(screen.getByLabelText('Talla XL agotada')).toBeTruthy();
+      expect(screen.getByLabelText('Seleccionar talla S')).toBeTruthy();
+    });
+
+    it('expone el estado deshabilitado en las tallas agotadas', async () => {
+      await renderDetalle(productoConTallaAgotada);
+
+      expect(
+        screen.getByLabelText('Talla XL agotada').props.accessibilityState.disabled,
+      ).toBe(true);
+    });
+
+    it('informa al pulsar una talla agotada', async () => {
+      await renderDetalle(productoConTallaAgotada);
+
+      await fireEvent.press(screen.getByLabelText('Talla XL agotada'));
+
+      expect(screen.getByText('No quedan existencias en la talla XL.')).toBeTruthy();
+      expect(screen.queryByText('Agregado al carrito.')).toBeNull();
+    });
+
+    it('no cambia la selección al pulsar una talla agotada', async () => {
+      await renderDetalle(productoConTallaAgotada);
+
+      await fireEvent.press(
+        screen.getByLabelText(`Seleccionar talla ${productoConTallaAgotada.tallas[0]}`),
+      );
+      await fireEvent.press(screen.getByLabelText('Talla XL agotada'));
+
+      expect(
+        screen.getByLabelText(`Seleccionar talla ${productoConTallaAgotada.tallas[0]}`).props
+          .accessibilityState.selected,
+      ).toBe(true);
+    });
+
+    it('conserva una talla disponible si tiene stock en algún color', async () => {
+      await renderDetalle(productoDisponible);
+
+      // M solo tiene existencias en negro, pero la talla sigue siendo
+      // seleccionable porque el color blanco no debe invalidarla.
+      expect(screen.getByLabelText('Seleccionar talla M')).toBeTruthy();
+    });
+
+    it('mantiene seleccionable un color con stock en al menos una talla', async () => {
+      await renderDetalle(productoDisponible);
+
+      // El blanco solo queda en S, por lo que el color sigue disponible.
+      expect(screen.getByLabelText('Seleccionar color Blanco')).toBeTruthy();
+    });
+
+    it('muestra las unidades restantes del producto', async () => {
+      await renderDetalle(productoDisponible);
+
+      expect(screen.getByText(`Quedan ${getProductStock(productoDisponible)} unidades`)).toBeTruthy();
+    });
+
+    it('no muestra unidades restantes si el producto está agotado', async () => {
+      await renderDetalle(productoAgotado);
+
+      expect(screen.queryByText(/Quedan \d+ unidades/)).toBeNull();
     });
   });
 

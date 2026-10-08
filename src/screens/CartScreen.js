@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { formatPrice } from '../data/products';
+import { getVariantStock } from '../data/inventory';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
 
@@ -26,13 +27,24 @@ export default function CartScreen({ navigation }) {
     );
   };
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }) => {
+    const availableStock = getVariantStock(
+      item.producto.id,
+      item.talla,
+      item.color,
+    );
+    const atStockLimit = item.cantidad >= availableStock;
+
+    return (
     <View style={styles.card}>
       <ProductCard producto={item.producto} />
       <View style={styles.info}>
         <Text style={styles.detail}>Talla: {item.talla || 'Única'}</Text>
         {item.color && <Text style={styles.detail}>Color: {item.color}</Text>}
         <Text style={styles.price}>{formatPrice(item.producto.precio * item.cantidad)}</Text>
+        {atStockLimit && (
+          <Text style={styles.stockLimit}>Máximo disponible: {availableStock}</Text>
+        )}
       </View>
       <View style={styles.actions}>
         <Pressable
@@ -53,10 +65,17 @@ export default function CartScreen({ navigation }) {
           {item.cantidad}
         </Text>
         <Pressable
-          accessibilityLabel={`Aumentar cantidad de ${item.producto.nombre}`}
+          accessibilityLabel={
+            atStockLimit
+              ? `Aumentar cantidad de ${item.producto.nombre}, sin más stock`
+              : `Aumentar cantidad de ${item.producto.nombre}`
+          }
           accessibilityRole="button"
+          accessibilityState={{ disabled: atStockLimit }}
+          disabled={atStockLimit}
           style={({ pressed }) => [
             styles.quantityButton,
+            atStockLimit && styles.quantityButtonDisabled,
             pressed && styles.quantityButtonPressed,
           ]}
           onPress={() => updateQuantity(item.id, item.cantidad + 1)}
@@ -73,7 +92,8 @@ export default function CartScreen({ navigation }) {
         </Pressable>
       </View>
     </View>
-  );
+    );
+  };
 
   if (!hydrated) {
     return (
@@ -168,6 +188,11 @@ const styles = StyleSheet.create({
   price: {
     ...typography.highlight,
     color: colors.accent,
+    marginTop: spacing.xs,
+  },
+  stockLimit: {
+    ...typography.caption,
+    color: colors.textDisabled,
     marginTop: spacing.xs,
   },
   actions: {

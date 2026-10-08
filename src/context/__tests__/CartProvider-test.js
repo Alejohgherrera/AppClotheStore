@@ -162,7 +162,7 @@ describe('CartProvider', () => {
         hook.current.addItem(conDosColores, 'M', 'Negro', 1);
       });
       await act(async () => {
-        hook.current.addItem(conDosColores, 'M', 'Blanco', 1);
+        hook.current.addItem(conDosColores, 'S', 'Blanco', 1);
       });
       await act(async () => {
         hook.current.addItem(conDosColores, 'L', 'Negro', 1);
@@ -389,7 +389,7 @@ describe('CartProvider', () => {
         hook.current.addItem(conDosColores, 'M', 'Negro', 1);
       });
       await act(async () => {
-        hook.current.addItem(conDosColores, 'L', 'Blanco', 2);
+        hook.current.addItem(conDosColores, 'L', 'Negro', 2);
       });
       const idAEliminar = hook.current.items[0].id;
 
@@ -466,11 +466,141 @@ describe('CartProvider', () => {
     });
   });
 
+  describe('validación de stock', () => {
+    it('rechazar agregar una variante agotada', async () => {
+      const { result: hook } = await montarConCarrito();
+
+      let resultado;
+      await act(async () => {
+        resultado = hook.current.addItem(conDosColores, 'M', 'Blanco', 1);
+      });
+
+      expect(resultado).toEqual({
+        ok: false,
+        reason: CART_ACTION_ERRORS.OUT_OF_STOCK,
+      });
+      expect(hook.current.items).toEqual([]);
+    });
+
+    it('rechaza una cantidad superior al stock de la variante', async () => {
+      const { result: hook } = await montarConCarrito();
+
+      let resultado;
+      await act(async () => {
+        resultado = hook.current.addItem(conDosColores, 'S', 'Negro', 99);
+      });
+
+      expect(resultado.ok).toBe(false);
+      expect(resultado.reason).toBe(CART_ACTION_ERRORS.INSUFFICIENT_STOCK);
+      expect(resultado.availableStock).toBe(6);
+      expect(hook.current.items).toEqual([]);
+    });
+
+    it('indica cuántas unidades quedan por añadir', async () => {
+      const { result: hook } = await montarConCarrito();
+      await act(async () => {
+        hook.current.addItem(conDosColores, 'S', 'Negro', 4);
+      });
+
+      let resultado;
+      await act(async () => {
+        resultado = hook.current.addItem(conDosColores, 'S', 'Negro', 3);
+      });
+
+      expect(resultado.reason).toBe(CART_ACTION_ERRORS.INSUFFICIENT_STOCK);
+      expect(resultado.remaining).toBe(2);
+      expect(hook.current.items[0].cantidad).toBe(4);
+    });
+
+    it('permite fusionar hasta agotar exactamente el stock', async () => {
+      const { result: hook } = await montarConCarrito();
+
+      await act(async () => {
+        hook.current.addItem(conDosColores, 'S', 'Negro', 3);
+      });
+      await act(async () => {
+        hook.current.addItem(conDosColores, 'S', 'Negro', 3);
+      });
+
+      expect(hook.current.items).toHaveLength(1);
+      expect(hook.current.items[0].cantidad).toBe(6);
+
+      let resultado;
+      await act(async () => {
+        resultado = hook.current.addItem(conDosColores, 'S', 'Negro', 1);
+      });
+
+      expect(resultado.reason).toBe(CART_ACTION_ERRORS.INSUFFICIENT_STOCK);
+      expect(hook.current.items[0].cantidad).toBe(6);
+    });
+
+    it('valida el stock acumulado entre altas consecutivas', async () => {
+      const { result: hook } = await montarConCarrito();
+
+      let primerResultado;
+      await act(async () => {
+        primerResultado = hook.current.addItem(conDosColores, 'S', 'Negro', 4);
+      });
+      let segundoResultado;
+      await act(async () => {
+        segundoResultado = hook.current.addItem(conDosColores, 'S', 'Negro', 4);
+      });
+
+      expect(primerResultado.ok).toBe(true);
+      expect(segundoResultado.reason).toBe(CART_ACTION_ERRORS.INSUFFICIENT_STOCK);
+      expect(hook.current.items[0].cantidad).toBe(4);
+    });
+
+    it('no limita la cantidad de variantes distintas', async () => {
+      const { result: hook } = await montarConCarrito();
+
+      await act(async () => {
+        hook.current.addItem(conDosColores, 'S', 'Negro', 6);
+      });
+      await act(async () => {
+        hook.current.addItem(conDosColores, 'S', 'Blanco', 4);
+      });
+
+      expect(hook.current.items).toHaveLength(2);
+    });
+
+    it('rechaza en updateQuantity una cantidad superior al stock', async () => {
+      const { result: hook } = await montarConCarrito();
+      await act(async () => {
+        hook.current.addItem(conDosColores, 'S', 'Negro', 2);
+      });
+      const { id } = hook.current.items[0];
+
+      let resultado;
+      await act(async () => {
+        resultado = hook.current.updateQuantity(id, 7);
+      });
+
+      expect(resultado.ok).toBe(false);
+      expect(resultado.reason).toBe(CART_ACTION_ERRORS.INSUFFICIENT_STOCK);
+      expect(hook.current.items[0].cantidad).toBe(2);
+    });
+
+    it('acepta en updateQuantity una cantidad igual al stock', async () => {
+      const { result: hook } = await montarConCarrito();
+      await act(async () => {
+        hook.current.addItem(conDosColores, 'S', 'Negro', 2);
+      });
+      const { id } = hook.current.items[0];
+
+      await act(async () => {
+        hook.current.updateQuantity(id, 6);
+      });
+
+      expect(hook.current.items[0].cantidad).toBe(6);
+    });
+  });
+
   describe('valores derivados', () => {
     it('calcula count y total solo desde líneas válidas', async () => {
       const { result: hook } = await montarConCarrito([
         { productoId: conDosColores.id, talla: 'M', color: 'Negro', cantidad: 2 },
-        { productoId: conDosColores.id, talla: 'L', color: 'Blanco', cantidad: 1 },
+        { productoId: conDosColores.id, talla: 'XL', color: 'Negro', cantidad: 1 },
         { productoId: agotado.id, cantidad: 5 },
         { productoId: 'inexistente', cantidad: 3 },
         { productoId: conDosColores.id, talla: 'M', color: 'Negro', cantidad: 0 },

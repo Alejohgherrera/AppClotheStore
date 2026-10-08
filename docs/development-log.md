@@ -804,6 +804,54 @@ La primera versión de la prueba de descarte de líneas inválidas asumía que e
 Feature 016 completada: los 17 criterios de aceptación de `spec.md` están cumplidos y verificados mediante pruebas automatizadas, compilación y validación visual en ambos dispositivos. Movida a "Hecho" en `roadmap.md`.
 
 Las reglas definitivas de stock por variante siguen dependiendo de la Feature 010 y del backend de las Features 011–015, tal como anticipates el `plan.md`.
+---
+
+## 2026-10-07 — Feature 010 · Tallas, variantes y stock
+
+### Actividad
+
+Se introdujo el inventario por variante, dejando el detalle y el carrito sujetos a la disponibilidad real de cada combinación de talla y color.
+
+### Decisiones
+
+- El stock se define por variante completa, es decir producto + talla + color, que es el comportamiento habitual en moda.
+- El inventario vive en `src/data/stock.js`, separado del catálogo, para que la Feature 011 pueda sustituir su fuente sin reescribir `products.js`.
+- Una talla es seleccionable si tiene stock en cualquier color del producto, y un color es seleccionable si tiene stock en cualquier talla. Sin esta regla, una talla agotada solo en negro bloquearía una compra válida en blanco.
+- Dos códigos de error nuevos: `OUT_OF_STOCK` cuando no hay existencias e `INSUFFICIENT_STOCK` cuando la cantidad supera el stock, con `availableStock` y `remaining` para que el mensaje sea útil.
+
+### Implementación
+
+- `src/data/stock.js`: inventario de las 124 combinaciones del catálogo, con datos de desarrollo y variantes agotadas repartidas.
+- `src/data/inventory.js`: seis funciones puras de solo lectura, `getVariantStock`, `isVariantAvailable`, `getAvailableSizes`, `getAvailableColors`, `getProductStock` e `isProductAvailable`. Devuelven cero o listas vacías ante entradas inexistentes y no lanzan excepciones.
+- `ProductDetailScreen`: talla y color agotados con opacidad, tachado, etiqueta "agotada" y `accessibilityState.disabled`; feedback al pulsarlos; indicador de unidades restantes; CTA bloqueada si la combinación seleccionada no tiene stock.
+- `CartContext`: `addItem` y `updateQuantity` validan contra el inventario y recortan por stock al hidratar.
+- `CartScreen`: el botón de aumento se deshabilita al alcanzar el stock y la línea avisa del máximo disponible.
+
+### Problemas encontrados y soluciones
+
+1. **El inventario escrito a mano estaba desalineado con el catálogo.** La prueba estructural detectó 21 combinaciones ausentes: los 14 productos femeninos usan talla `XS`, que no había incluido. Solución: auditar el catálogo y corregir `src/data/stock.js`.
+2. **Un color no existía con el nombre escrito.** `polo-salvator-rosa` usa `Rosa`, no `Rosa Quartz`. Solución: corregir el dato.
+3. **`polo-salvator-rosa` está marcado `disponible: false` en el catálogo pero tenía stock.** Como `disponible: false` es una compuerta dura en `CartContext`, el inventario se puso en cero. Solución: cero en las cuatro tallas, documentado en el propio archivo.
+4. **`getAvailableColors` devuelve nombres y la pantalla le pasaba el objeto de color.** `includes` nunca coincidía y todos los colores aparecían agotados. Detectado por las pruebas del detalle. Solución: comparar con `color.nombre`.
+5. **`getVariantStock` recibía el objeto de color en lugar del nombre.** Toda combinación seleccionada parecía agotada y la CTA nunca agregaba al carrito. Detectado por las pruebas del detalle. Solución: pasar `selectedColor.nombre`.
+6. **`addItem` no podía validar el stock acumulado.** El estado del closure puede estar desactualizado en llamadas consecutivas. Solución: espejo síncrono de `items` en un `useRef`.
+7. **La suite de `normalizeCartItems` usaba un catálogo sintético.** Con inventario, un catálogo ficticio no tiene existencias y todas las líneas se descartaban. Solución: migrar la suite al catálogo real.
+8. **Dos claves de objeto sin comillas.** `Rosa Quartz` y `Azul Denim` rompían el parseo. Solución: entrecomillar.
+9. **Una tarea del plan resultó innecesaria.** "Limpiar selecciones que dejen de ser viables" no puede ocurrir con inventario estático, porque una variante agotada nunca llega a estar seleccionada. Se retiró en lugar de escribir código muerto y se reevaluará con la Feature 011.
+
+### Validaciones
+
+1. `npm test`: 9 suites, 234 pruebas, todas aprobadas.
+2. `npm run lint`: 0 errores y 0 avisos.
+3. `npx expo export --platform all`: bundles iOS y Android generados, 0 errores.
+
+### Pendiente
+
+- Validación visual en Android e iOS: comprobar que una talla agotada aparece tachada y no es seleccionable, que la indicadora de unidades restantes es correcta, que la CTA no permite comprar una combinación agotada y que el carrito impide superar el stock.
+
+### Resultado
+
+Los 23 criterios de aceptación de `spec.md` están implementados y cubiertos por pruebas. Falta únicamente la validación visual antes de mover la Feature 010 a "Hecho".
 
 ---
 

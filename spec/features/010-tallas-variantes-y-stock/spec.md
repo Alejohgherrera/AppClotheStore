@@ -1,6 +1,6 @@
 # 010 · Tallas, variantes y stock
 
-**Estado:** en curso
+**Estado:** en curso — implementada y validada automáticamente; pendiente la validación visual manual en Android e iOS
 
 ## Qué hace
 
@@ -27,28 +27,28 @@ El catálogo de desarrollo tiene 31 productos y 124 combinaciones de talla y col
 
 ## Criterios de aceptación
 
-- [ ] `src/data/stock.js` declara el inventario de todas las combinaciones de talla y color del catálogo.
-- [ ] Toda combinación del catálogo tiene una entrada de stock y toda entrada corresponde a una combinación real.
-- [ ] `getVariantStock` devuelve el stock de una variante y cero si no existe.
-- [ ] `isVariantAvailable` indica si una variante tiene unidades disponibles.
-- [ ] `getAvailableSizes` devuelve solo las tallas con stock para un producto.
-- [ ] `getAvailableColors` devuelve solo los colores con stock para un producto.
-- [ ] `getVariantStock` y las funciones derivadas son puras y no dependen de React.
-- [ ] El detalle deshabilita visualmente las tallas y colores sin stock.
-- [ ] El detalle comunica el motivo por el que una talla o color no puede seleccionarse.
-- [ ] El detalle no permite seleccionar una combinación agotada.
-- [ ] Un producto totalmente agotado muestra la insignia y mantiene la CTA deshabilitada.
-- [ ] `addItem` rechaza una variante agotada.
-- [ ] `addItem` rechaza una cantidad que supere el stock disponible.
-- [ ] `addItem` fusiona dos altas de la misma variante sin superar el stock acumulado.
-- [ ] `updateQuantity` rechaza una cantidad superior al stock disponible.
-- [ ] El carrito no permite superar el stock mediante el botón de aumento.
-- [ ] Las líneas persistidas que superen el stock actual se recortan al hidratar.
-- [ ] `count` y `total` siguen derivándose exclusivamente de líneas válidas.
-- [ ] La UI comunica las tallas y colores agotados con roles y estados de accesibilidad.
-- [ ] Los criterios críticos cuentan con pruebas automatizadas.
-- [ ] La aplicación compila para Android e iOS con Expo SDK 54.
-- [ ] La implementación no introduce dependencias de runtime innecesarias.
+- [x] `src/data/stock.js` declara el inventario de todas las combinaciones de talla y color del catálogo.
+- [x] Toda combinación del catálogo tiene una entrada de stock y toda entrada corresponde a una combinación real.
+- [x] `getVariantStock` devuelve el stock de una variante y cero si no existe.
+- [x] `isVariantAvailable` indica si una variante tiene unidades disponibles.
+- [x] `getAvailableSizes` devuelve solo las tallas con stock para un producto.
+- [x] `getAvailableColors` devuelve solo los colores con stock para un producto.
+- [x] `getVariantStock` y las funciones derivadas son puras y no dependen de React.
+- [x] El detalle deshabilita visualmente las tallas y colores sin stock.
+- [x] El detalle comunica el motivo por el que una talla o color no puede seleccionarse.
+- [x] El detalle no permite seleccionar una combinación agotada.
+- [x] Un producto totalmente agotado muestra la insignia y mantiene la CTA deshabilitada.
+- [x] `addItem` rechaza una variante agotada.
+- [x] `addItem` rechaza una cantidad que supere el stock disponible.
+- [x] `addItem` fusiona dos altas de la misma variante sin superar el stock acumulado.
+- [x] `updateQuantity` rechaza una cantidad superior al stock disponible.
+- [x] El carrito no permite superar el stock mediante el botón de aumento.
+- [x] Las líneas persistidas que superen el stock actual se recortan al hidratar.
+- [x] `count` y `total` siguen derivándose exclusivamente de líneas válidas.
+- [x] La UI comunica las tallas y colores agotados con roles y estados de accesibilidad.
+- [x] Los criterios críticos cuentan con pruebas automatizadas.
+- [x] La aplicación compila para Android e iOS con Expo SDK 54.
+- [x] La implementación no introduce dependencias de runtime innecesarias.
 
 ## Fuera de alcance
 
@@ -58,3 +58,9 @@ El catálogo de desarrollo tiene 31 productos y 124 combinaciones de talla y col
 - La notificación al usuario cuando una variante vuelve a estar disponible corresponde a una feature posterior.
 - Checkout, pagos y creación de pedidos pertenecen a las Features 018 y 023–026.
 - Favoritos pertenecen a la Feature 017.
+
+## Notas de implementación
+
+- `availableSizes` incluye `XS` y `XXL`, y `XS` sí lo usan los 14 productos femeninos. Ningún producto usa `XXL`. La 010 no introduce ni elimina tallas: esa decisión pertenece a la evolución del catálogo.
+- `addItem` necesita conocer la cantidad ya presente de la variante para validar el stock acumulado. Se resolvió con un espejo síncrono de `items` en un `useRef`, porque el estado del closure puede estar desactualizado en llamadas consecutivas dentro del mismo `act`.
+- La suite de `normalizeCartItems` usa el catálogo real en lugar de un catálogo sintético, porque el normalizador consulta `src/data/stock.js` y un catálogo ficticio no tendría existencias.

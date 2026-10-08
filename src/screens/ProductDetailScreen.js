@@ -10,11 +10,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, radius, spacing, typography } from '../theme';
 import { formatPrice } from '../data/products';
+import {
+  getAvailableColors,
+  getAvailableSizes,
+  getProductStock,
+  getVariantStock,
+} from '../data/inventory';
 import { CART_ACTION_ERRORS, useCart } from '../context/CartContext';
 
 const feedbackMessages = {
   [CART_ACTION_ERRORS.NOT_HYDRATED]: 'El carrito se está cargando. Inténtalo de nuevo.',
   [CART_ACTION_ERRORS.PRODUCT_UNAVAILABLE]: 'Este producto no está disponible.',
+  [CART_ACTION_ERRORS.OUT_OF_STOCK]: 'Esta combinación está agotada.',
   [CART_ACTION_ERRORS.INVALID_VARIANT]: 'Selecciona una talla y un color válidos.',
   [CART_ACTION_ERRORS.INVALID_QUANTITY]: 'La cantidad no es válida.',
 };
@@ -29,6 +36,7 @@ export default function ProductDetailScreen({ route, navigation }) {
     tallas = [],
     colores = [],
     disponible,
+    id,
   } = producto;
   const productImages = Array.isArray(imagenes) && imagenes.length > 0 ? imagenes : [];
   const [selectedSize, setSelectedSize] = useState(null);
@@ -36,6 +44,19 @@ export default function ProductDetailScreen({ route, navigation }) {
   const [feedback, setFeedback] = useState(null);
   const feedbackTimer = useRef(null);
   const { addItem, hydrated } = useCart();
+
+  const availableSizes = getAvailableSizes(producto);
+  const availableColors = getAvailableColors(producto);
+  const productStock = getProductStock(producto);
+  const isSoldOut = !disponible || productStock <= 0;
+  const isSizeAvailable = (talla) => availableSizes.includes(talla);
+  const isColorAvailable = (color) => availableColors.includes(color?.nombre);
+
+  const selectedVariantStock =
+    selectedSize && selectedColor
+      ? getVariantStock(id, selectedSize, selectedColor.nombre)
+      : null;
+  const selectedVariantSoldOut = selectedVariantStock === 0;
 
   useEffect(() => {
     return () => {
@@ -49,8 +70,24 @@ export default function ProductDetailScreen({ route, navigation }) {
     feedbackTimer.current = setTimeout(() => setFeedback(null), 2500);
   };
 
+  const handleSelectSize = (talla) => {
+    if (!isSizeAvailable(talla)) {
+      showFeedback(`No quedan existencias en la talla ${talla}.`);
+      return;
+    }
+    setSelectedSize(talla);
+  };
+
+  const handleSelectColor = (color) => {
+    if (!isColorAvailable(color)) {
+      showFeedback(`No quedan existencias en ${color.nombre}.`);
+      return;
+    }
+    setSelectedColor(color);
+  };
+
   const handleAddToCart = () => {
-    if (!disponible) {
+    if (isSoldOut) {
       showFeedback('Este producto está agotado.');
       return;
     }
@@ -66,6 +103,10 @@ export default function ProductDetailScreen({ route, navigation }) {
       showFeedback('Selecciona un color.');
       return;
     }
+    if (selectedVariantSoldOut) {
+      showFeedback(feedbackMessages[CART_ACTION_ERRORS.OUT_OF_STOCK]);
+      return;
+    }
 
     const result = addItem(
       producto,
@@ -75,6 +116,10 @@ export default function ProductDetailScreen({ route, navigation }) {
     );
 
     if (!result?.ok) {
+      if (result?.reason === CART_ACTION_ERRORS.INSUFFICIENT_STOCK && result.remaining > 0) {
+        showFeedback(`Solo quedan ${result.remaining} unidades disponibles.`);
+        return;
+      }
       showFeedback(feedbackMessages[result?.reason] || 'No se pudo agregar el producto.');
       return;
     }
@@ -112,7 +157,7 @@ export default function ProductDetailScreen({ route, navigation }) {
               <Text style={styles.imagePlaceholderText}>Sin imagen disponible</Text>
             </View>
           )}
-          {!disponible && (
+          {isSoldOut && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>Agotado</Text>
             </View>
@@ -124,26 +169,53 @@ export default function ProductDetailScreen({ route, navigation }) {
           <Text style={styles.name}>{nombre}</Text>
           <Text style={styles.price}>{formatPrice(precio)}</Text>
           {descripcion && <Text style={styles.description}>{descripcion}</Text>}
+          {!isSoldOut && productStock > 0 && (
+            <Text style={styles.stockHint}>
+              {productStock === 1
+                ? 'Queda 1 unidad'
+                : `Quedan ${productStock} unidades`}
+            </Text>
+          )}
         </View>
 
         {tallas.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Talla</Text>
             <View style={styles.chipGroup}>
-              {tallas.map((talla) => (
-                <Pressable
-                  key={talla}
-                  accessibilityLabel={`Seleccionar talla ${talla}`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: selectedSize === talla }}
-                  style={[styles.chip, selectedSize === talla && styles.chipSelected]}
-                  onPress={() => setSelectedSize(talla)}
-                >
-                  <Text style={[styles.chipText, selectedSize === talla && styles.chipTextSelected]}>
-                    {talla}
-                  </Text>
-                </Pressable>
-              ))}
+              {tallas.map((talla) => {
+                const agotada = !isSizeAvailable(talla);
+                return (
+                  <Pressable
+                    key={talla}
+                    accessibilityLabel={
+                      agotada
+                        ? `Talla ${talla} agotada`
+                        : `Seleccionar talla ${talla}`
+                    }
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      selected: selectedSize === talla,
+                      disabled: agotada,
+                    }}
+                    style={[
+                      styles.chip,
+                      selectedSize === talla && styles.chipSelected,
+                      agotada && styles.chipSoldOut,
+                    ]}
+                    onPress={() => handleSelectSize(talla)}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        selectedSize === talla && styles.chipTextSelected,
+                        agotada && styles.chipTextSoldOut,
+                      ]}
+                    >
+                      {talla}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
         )}
@@ -152,39 +224,59 @@ export default function ProductDetailScreen({ route, navigation }) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Color</Text>
             <View style={styles.chipGroup}>
-              {colores.map((color) => (
-                <Pressable
-                  key={color.nombre}
-                  accessibilityLabel={`Seleccionar color ${color.nombre}`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: selectedColor?.nombre === color.nombre }}
-                  style={[styles.colorChip, selectedColor?.nombre === color.nombre && styles.colorChipSelected]}
-                  onPress={() => setSelectedColor(color)}
-                >
-                  <View style={[styles.colorDot, { backgroundColor: color.codigo }]} />
-                  <Text style={[styles.chipText, selectedColor?.nombre === color.nombre && styles.chipTextSelected]}>
-                    {color.nombre}
-                  </Text>
-                </Pressable>
-              ))}
+              {colores.map((color) => {
+                const agotado = !isColorAvailable(color);
+                return (
+                  <Pressable
+                    key={color.nombre}
+                    accessibilityLabel={
+                      agotado
+                        ? `Color ${color.nombre} agotado`
+                        : `Seleccionar color ${color.nombre}`
+                    }
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      selected: selectedColor?.nombre === color.nombre,
+                      disabled: agotado,
+                    }}
+                    style={[
+                      styles.colorChip,
+                      selectedColor?.nombre === color.nombre && styles.colorChipSelected,
+                      agotado && styles.chipSoldOut,
+                    ]}
+                    onPress={() => handleSelectColor(color)}
+                  >
+                    <View style={[styles.colorDot, { backgroundColor: color.codigo }]} />
+                    <Text
+                      style={[
+                        styles.chipText,
+                        selectedColor?.nombre === color.nombre && styles.chipTextSelected,
+                        agotado && styles.chipTextSoldOut,
+                      ]}
+                    >
+                      {color.nombre}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
         )}
 
         <Pressable
-          accessibilityLabel={!disponible ? 'Producto agotado' : 'Agregar al carrito'}
+          accessibilityLabel={isSoldOut ? 'Producto agotado' : 'Agregar al carrito'}
           accessibilityRole="button"
-          accessibilityState={{ disabled: !disponible || !hydrated }}
-          disabled={!disponible || !hydrated}
+          accessibilityState={{ disabled: isSoldOut || !hydrated }}
+          disabled={isSoldOut || !hydrated}
           style={({ pressed }) => [
             styles.button,
-            (!disponible || !hydrated) && styles.buttonDisabled,
+            (isSoldOut || !hydrated) && styles.buttonDisabled,
             pressed && styles.buttonPressed,
           ]}
           onPress={handleAddToCart}
         >
           <Text style={styles.buttonText}>
-            {!disponible
+            {isSoldOut
               ? 'Producto agotado'
               : !hydrated
                 ? 'Cargando carrito…'
@@ -293,6 +385,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     lineHeight: 22,
   },
+  stockHint: {
+    ...typography.caption,
+    color: colors.textDisabled,
+    marginTop: spacing.xs,
+  },
   section: {
     marginTop: spacing.xl,
     gap: spacing.sm,
@@ -321,6 +418,15 @@ const styles = StyleSheet.create({
   chipSelected: {
     backgroundColor: colors.surfaceRaised,
     borderColor: colors.accent,
+  },
+  chipSoldOut: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    opacity: 0.45,
+  },
+  chipTextSoldOut: {
+    color: colors.textDisabled,
+    textDecorationLine: 'line-through',
   },
   chipText: {
     ...typography.caption,

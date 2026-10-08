@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { products } from '../data/products';
+import { getVariantStock } from '../data/inventory';
 
 const STORAGE_KEY = '@clothestore/cart';
 
@@ -10,6 +11,8 @@ export const CART_ACTION_ERRORS = {
   PRODUCT_UNAVAILABLE: 'PRODUCT_UNAVAILABLE',
   INVALID_VARIANT: 'INVALID_VARIANT',
   INVALID_QUANTITY: 'INVALID_QUANTITY',
+  OUT_OF_STOCK: 'OUT_OF_STOCK',
+  INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK',
 };
 
 const CartContext = createContext(null);
@@ -72,10 +75,17 @@ export function normalizeCartItems(items, catalog = products) {
     const variant = getVariant(producto, item.talla, item.color);
     if (!variant || !isPositiveInteger(item.cantidad)) return normalized;
 
+    const availableStock = getVariantStock(producto.id, variant.talla, variant.color);
+    if (availableStock <= 0) return normalized;
+
+    // Se recorta al stock actual en lugar de descartar la línea: si queda
+    // alguna unidad, se conserva la intención de compra del usuario.
+    const cantidad = Math.min(item.cantidad, availableStock);
+
     const id = buildCartKey(producto, variant.talla, variant.color);
     const existing = normalized.find((cartItem) => cartItem.id === id);
     if (existing) {
-      existing.cantidad += item.cantidad;
+      existing.cantidad = Math.min(existing.cantidad + cantidad, availableStock);
       return normalized;
     }
 
@@ -84,7 +94,7 @@ export function normalizeCartItems(items, catalog = products) {
       producto,
       talla: variant.talla,
       color: variant.color,
-      cantidad: item.cantidad,
+      cantidad,
     });
     return normalized;
   }, []);
@@ -98,6 +108,12 @@ export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [hydrated, setHydrated] = useState(false);
   const [persistenceEnabled, setPersistenceEnabled] = useState(false);
+
+  // Espejo síncrono de items: addItem necesita conocer la cantidad ya
+  // presente de una variante para validar el stock sin depender del estado
+  // del closure, que puede estar desactualizado en llamadas consecutivas.
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
 
   useEffect(() => {
     let active = true;
@@ -159,6 +175,24 @@ export function CartProvider({ children }) {
     }
 
     const itemId = buildCartKey(canonicalProduct, variant.talla, variant.color);
+    const availableStock = getVariantStock(
+      canonicalProduct.id,
+      variant.talla,
+      variant.color,
+    );
+    if (availableStock <= 0) {
+      return actionError(CART_ACTION_ERRORS.OUT_OF_STOCK);
+    }
+
+    const currentQuantity = itemsRef.current.find((item) => item.id === itemId)?.cantidad ?? 0;
+    if (currentQuantity + normalizedQuantity > availableStock) {
+      return {
+        ...actionError(CART_ACTION_ERRORS.INSUFFICIENT_STOCK),
+        availableStock,
+        remaining: availableStock - currentQuantity,
+      };
+    }
+
     setItems((prev) => {
       const existing = prev.find((item) => item.id === itemId);
       if (existing) {
@@ -182,7 +216,7 @@ export function CartProvider({ children }) {
     });
 
     return { ok: true, itemId };
-  }, [hydrated]);
+  }, [hydrated, itemsRef]);
 
   const removeItem = useCallback((itemId) => {
     if (!hydrated) return actionError(CART_ACTION_ERRORS.NOT_HYDRATED);
@@ -206,11 +240,22 @@ export function CartProvider({ children }) {
       return actionError(CART_ACTION_ERRORS.INVALID_QUANTITY);
     }
 
+    const target = itemsRef.current.find((item) => item.id === itemId);
+    if (!target) return actionError(CART_ACTION_ERRORS.INVALID_PRODUCT);
+
+    const availableStock = getVariantStock(target.producto.id, target.talla, target.color);
+    if (cantidad > availableStock) {
+      return {
+        ...actionError(CART_ACTION_ERRORS.INSUFFICIENT_STOCK),
+        availableStock,
+      };
+    }
+
     setItems((prev) => prev.map((item) =>
       item.id === itemId ? { ...item, cantidad } : item,
     ));
     return { ok: true, itemId };
-  }, [hydrated]);
+  }, [hydrated, itemsRef]);
 
   const clearCart = useCallback(() => {
     if (!hydrated) return actionError(CART_ACTION_ERRORS.NOT_HYDRATED);

@@ -76,6 +76,8 @@ Una combinación concreta solo queda deshabilitada si su stock exacto es cero.
 - Si el producto completo está agotado, se mantiene la insignia y la CTA deshabilitada de la Feature 009.
 - Si una talla o un color queda sin selección viable tras aplicar el inventario, la selección se limpia para que la CTA no permita una combinación imposible.
 
+> La limpieza de selecciones no resultó necesaria con inventario estático: una variante agotada nunca llega a estar seleccionada y el stock no cambia durante la sesión. Se reevaluará cuando el inventario sea dinámico en la Feature 011.
+
 ## Integración con el carrito
 
 - `addItem` rechaza una variante agotada con el código `OUT_OF_STOCK`.
